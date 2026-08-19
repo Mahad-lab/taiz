@@ -1,38 +1,48 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APITester } from "./APITester";
-import "./index.css";
+import { ToastViewport } from "@/components/layout/ToastViewport";
+import { useHashRoute } from "@/lib/router";
+import { AgentChat } from "@/screens/AgentChat";
+import { HumanReview } from "@/screens/HumanReview";
+import { MagicView } from "@/screens/MagicView";
+import { NegotiationStatus } from "@/screens/NegotiationStatus";
+import { OfferApproval } from "@/screens/OfferApproval";
+import { OrderConfirmation } from "@/screens/OrderConfirmation";
+import { ProviderDashboard } from "@/screens/ProviderDashboard";
+import { RequestDashboard } from "@/screens/RequestDashboard";
+import { Welcome } from "@/screens/Welcome";
+import { AppProvider } from "@/state/AppContext";
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+function Router() {
+  const [route, navigate] = useHashRoute();
+
+  switch (route) {
+    case "dashboard":
+      return <RequestDashboard navigate={navigate} />;
+    case "chat":
+      return <AgentChat navigate={navigate} />;
+    case "magic":
+      return <MagicView navigate={navigate} />;
+    case "negotiation":
+      return <NegotiationStatus navigate={navigate} />;
+    case "review":
+      return <HumanReview navigate={navigate} />;
+    case "approval":
+      return <OfferApproval navigate={navigate} />;
+    case "confirmed":
+      return <OrderConfirmation navigate={navigate} />;
+    case "provider":
+      return <ProviderDashboard navigate={navigate} />;
+    case "welcome":
+    default:
+      return <Welcome navigate={navigate} />;
+  }
+}
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
-      <div className="flex justify-center items-center gap-8 mb-8">
-        <img
-          src={logo}
-          alt="Bun Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#646cffaa] scale-120"
-        />
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#61dafbaa] [animation:spin_20s_linear_infinite]"
-        />
-      </div>
-      <Card>
-        <CardHeader className="gap-4">
-          <CardTitle className="text-3xl font-bold">Bun + React</CardTitle>
-          <CardDescription>
-            Edit <code className="rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono">src/App.tsx</code> and save to
-            test HMR
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <APITester />
-        </CardContent>
-      </Card>
-    </div>
+    <AppProvider>
+      <Router />
+      <ToastViewport />
+    </AppProvider>
   );
 }
 

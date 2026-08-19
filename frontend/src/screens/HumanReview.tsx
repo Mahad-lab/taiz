@@ -44,7 +44,7 @@ export function HumanReview({ navigate }: HumanReviewProps) {
     <div className="flex min-h-dvh flex-col bg-soft-sand">
       <DesktopHeader active="review" onSelect={onTab} />
 
-      <main className="mx-auto flex w-full max-w-[600px] flex-1 flex-col justify-center px-4 py-8">
+      <main className="mx-auto flex w-full max-w-[600px] flex-1 flex-col justify-center px-4 pb-24 pt-8 md:pb-8">
         <article className="overflow-hidden rounded-lg border border-deep-slate/10 bg-white">
           {/* Header */}
           <div className="border-b border-deep-slate/10 bg-surface-container-lowest p-4 md:p-6">

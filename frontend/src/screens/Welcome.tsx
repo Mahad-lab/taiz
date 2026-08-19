@@ -43,24 +43,24 @@ export function Welcome({ navigate }: WelcomeProps) {
         </div>
 
         <div className="flex w-full max-w-sm flex-col gap-3 pb-10">
-<Button
-          onClick={() => choose("customer")}
-          variant="secondary"
-          size="pill"
-          className="w-full"
-        >
-          I need a service
-          <ArrowRight className="size-4" strokeWidth={2.5} />
-        </Button>
-        <Button
-          onClick={() => choose("provider")}
-          variant="solid-dark"
-          size="pill"
-          className="w-full"
-        >
-          I want to offer my services
-          <Toolbox className="size-4" strokeWidth={2.5} />
-        </Button>
+          <Button
+            onClick={() => choose("customer")}
+            variant="secondary"
+            size="pill"
+            className="w-full"
+          >
+            I need a service
+            <ArrowRight className="size-4" strokeWidth={2.5} />
+          </Button>
+          <Button
+            onClick={() => choose("provider")}
+            variant="solid-dark"
+            size="pill"
+            className="w-full"
+          >
+            I want to offer my services
+            <Toolbox className="size-4" strokeWidth={2.5} />
+          </Button>
         </div>
       </div>
     </DeviceFrame>

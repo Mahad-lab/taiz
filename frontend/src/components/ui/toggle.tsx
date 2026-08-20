@@ -29,7 +29,7 @@ export function Toggle({ checked, onChange, className, label, disabled }: Toggle
       <span
         className={cn(
           // Added `left-0` to explicitly anchor the absolute positioning
-          "absolute top-1 left-0 size-6 rounded-full bg-white shadow-sm transition-transform duration-300",
+          "absolute top-[3px] left-0 size-6 rounded-full bg-white shadow-sm transition-transform duration-300",
           // Changed [1.9rem] to 7 for perfect symmetrical 4px padding
           checked ? "translate-x-7" : "translate-x-1",
         )}

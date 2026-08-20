@@ -83,6 +83,21 @@ body {
   }
 }
 
+/* Expanding radar ring that scales out and fades (dark status variant) */
+.ring-expand {
+  animation: ring-expand 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+@keyframes ring-expand {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion) {
   *,
   ::before,

@@ -26,7 +26,10 @@ type Action =
   | { type: "SET_PICKUP"; day: string; time: string }
   | { type: "CONFIRM_ORDER" }
   | { type: "DECLINE_ORDER" }
+  | { type: "ACCEPT_JOB"; id: string }
   | { type: "TOGGLE_AGENT" }
+  | { type: "HYDRATE"; payload: Pick<AppState, "role" | "request" | "jobs" | "agentActive"> }
+  | { type: "RESET" }
   | { type: "SHOW_TOAST"; message: string }
   | { type: "CLEAR_TOAST" };
 
@@ -65,19 +68,32 @@ const INITIAL_JOBS: ProviderJob[] = [
 
 const STORAGE_KEY = "taiz:state";
 
-function loadPersisted(): Pick<AppState, "role" | "jobs" | "agentActive"> {
+/** localStorage (not sessionStorage) so the provider side in another tab/window sees cross-tab updates. */
+function loadPersisted(): Pick<AppState, "role" | "request" | "jobs" | "agentActive"> {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return { role: null, jobs: INITIAL_JOBS, agentActive: true };
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true };
     const parsed = JSON.parse(raw) as Partial<AppState>;
     return {
       role: parsed.role ?? null,
+      request: isRequest(parsed.request) ? parsed.request : null,
       jobs: parsed.jobs?.length ? parsed.jobs : INITIAL_JOBS,
       agentActive: parsed.agentActive ?? true,
     };
   } catch {
-    return { role: null, jobs: INITIAL_JOBS, agentActive: true };
+    return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true };
   }
+}
+
+function isRequest(value: unknown): value is TaizRequest {
+  if (!value || typeof value !== "object") return false;
+  const req = value as Partial<TaizRequest>;
+  return (
+    typeof req.id === "string" &&
+    typeof req.item === "string" &&
+    typeof req.status === "string" &&
+    Array.isArray(req.messages)
+  );
 }
 
 function makeRequest(): TaizRequest {
@@ -138,8 +154,19 @@ function reducer(state: AppState, action: Action): AppState {
     case "DECLINE_ORDER":
       if (!state.request) return state;
       return { ...state, request: { ...state.request, status: "declined" } };
+    case "ACCEPT_JOB":
+      return {
+        ...state,
+        jobs: state.jobs.map(job =>
+          job.id === action.id ? { ...job, status: "confirmed" } : job,
+        ),
+      };
     case "TOGGLE_AGENT":
       return { ...state, agentActive: !state.agentActive };
+    case "HYDRATE":
+      return { ...state, ...action.payload };
+    case "RESET":
+      return { ...state, role: null, request: null, jobs: INITIAL_JOBS, agentActive: true };
     case "SHOW_TOAST":
       return { ...state, toast: { id: Date.now(), message: action.message } };
     case "CLEAR_TOAST":
@@ -156,8 +183,10 @@ interface AppContextValue extends AppState {
   setPickup: (day: string, time: string) => void;
   confirmOrder: () => void;
   declineOrder: () => void;
+  acceptJob: (id: string) => void;
   setRole: (role: Role) => void;
   toggleAgent: () => void;
+  reset: () => void;
   showToast: (message: string) => void;
 }
 
@@ -167,20 +196,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const persisted = useMemo(loadPersisted, []);
   const [state, dispatch] = useReducer(reducer, {
     ...persisted,
-    request: null,
     toast: null,
   });
 
   useEffect(() => {
-    const { role, jobs, agentActive } = state;
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ role, jobs, agentActive }));
-  }, [state.role, state.jobs, state.agentActive]);
+    const { role, request, jobs, agentActive } = state;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ role, request, jobs, agentActive }),
+    );
+  }, [state.role, state.request, state.jobs, state.agentActive]);
 
   useEffect(() => {
     if (!state.toast) return;
     const t = setTimeout(() => dispatch({ type: "CLEAR_TOAST" }), 2600);
     return () => clearTimeout(t);
   }, [state.toast]);
+
+  // Live cross-tab sync: apply writes made in other tabs/windows.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY) return;
+      dispatch({ type: "HYDRATE", payload: loadPersisted() });
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const value: AppContextValue = {
     ...state,
@@ -191,8 +232,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPickup: (day, time) => dispatch({ type: "SET_PICKUP", day, time }),
     confirmOrder: () => dispatch({ type: "CONFIRM_ORDER" }),
     declineOrder: () => dispatch({ type: "DECLINE_ORDER" }),
+    acceptJob: id => dispatch({ type: "ACCEPT_JOB", id }),
     setRole: role => dispatch({ type: "SET_ROLE", role }),
     toggleAgent: () => dispatch({ type: "TOGGLE_AGENT" }),
+    reset: () => dispatch({ type: "RESET" }),
     showToast: message => dispatch({ type: "SHOW_TOAST", message }),
   };
 

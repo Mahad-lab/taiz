@@ -6,6 +6,7 @@ import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { Timeline } from "@/components/shared/Timeline";
 import { DEMO, TIMINGS, buildTimeline, sleep, type TimelineStep } from "@/lib/agent";
+import { customerTabRoute } from "@/lib/nav";
 import type { Route } from "@/lib/router";
 import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
@@ -15,7 +16,7 @@ interface NegotiationStatusProps {
 }
 
 export function NegotiationStatus({ navigate }: NegotiationStatusProps) {
-  const { setStatus, showToast } = useApp();
+  const { request, setStatus, showToast } = useApp();
   const [steps, setSteps] = useState<TimelineStep[]>(() => buildTimeline());
   const cancelled = useRef(false);
 
@@ -49,8 +50,9 @@ export function NegotiationStatus({ navigate }: NegotiationStatusProps) {
   }, [navigate, setStatus]);
 
   const onTab = (tab: NavTabId) => {
-    if (tab === "tasks") return navigate("dashboard");
-    showToast(`${titleCase(tab)} — coming soon`);
+    const target = customerTabRoute(tab, request);
+    if (target) return navigate(target);
+    showToast(tab === "review" ? "Nothing to review yet" : `${titleCase(tab)} — coming soon`);
   };
 
   return (
@@ -83,6 +85,13 @@ export function NegotiationStatus({ navigate }: NegotiationStatusProps) {
 
         <h2 className="mb-4 font-mono text-[13px] uppercase tracking-wider text-on-surface-variant">Activity Log</h2>
         <Timeline steps={steps} />
+
+        <button
+          onClick={() => navigate("agent-chat-log")}
+          className="mt-5 w-full rounded bg-primary-container px-4 py-3 font-mono text-[13px] font-medium text-on-primary transition-opacity hover:opacity-90"
+        >
+          View Chat Log
+        </button>
       </main>
 
       <div className="absolute inset-x-0 bottom-0 z-30">

@@ -1,10 +1,12 @@
 import { Bot, MapPin, Menu, Timer } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
+import { providerTabRoute } from "@/lib/nav";
 import type { Route } from "@/lib/router";
 import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
@@ -14,10 +16,11 @@ interface ProviderDashboardProps {
 }
 
 export function ProviderDashboard({ navigate }: ProviderDashboardProps) {
-  const { jobs, agentActive, toggleAgent, showToast } = useApp();
+  const { jobs, agentActive, toggleAgent, acceptJob, showToast } = useApp();
 
   const onTab = (tab: NavTabId) => {
-    if (tab === "jobs") return navigate("provider");
+    const target = providerTabRoute(tab);
+    if (target) return navigate(target);
     showToast(`${titleCase(tab)} — coming soon`);
   };
 
@@ -85,9 +88,21 @@ export function ProviderDashboard({ navigate }: ProviderDashboardProps) {
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <span className="text-[18px] font-semibold text-primary">{job.price.toLocaleString()} PKR</span>
-                <Badge variant={job.status === "confirmed" ? "mint" : "neutral"}>
-                  {job.status === "confirmed" ? "Confirmed" : "Awaiting Auth"}
-                </Badge>
+                {job.status === "pending" ? (
+                  <Button
+                    onClick={() => {
+                      acceptJob(job.id);
+                      showToast("Job accepted");
+                    }}
+                    variant="secondary"
+                    size="sm"
+                    className="rounded-full px-3 font-mono text-[11px]"
+                  >
+                    Accept job
+                  </Button>
+                ) : (
+                  <Badge variant="mint">Confirmed</Badge>
+                )}
               </div>
             </div>
           ))}

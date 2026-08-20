@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
 import { DesktopHeader } from "@/components/layout/DesktopHeader";
 import { DEMO } from "@/lib/agent";
+import { customerTabRoute } from "@/lib/nav";
 import type { Route } from "@/lib/router";
 import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
@@ -35,9 +36,9 @@ export function HumanReview({ navigate }: HumanReviewProps) {
   };
 
   const onTab = (tab: NavTabId) => {
-    if (tab === "tasks") return navigate("dashboard");
-    if (tab === "review") return;
-    showToast(`${titleCase(tab)} — coming soon`);
+    const target = customerTabRoute(tab, request);
+    if (target) return navigate(target);
+    showToast(tab === "review" ? "Nothing to review yet" : `${titleCase(tab)} — coming soon`);
   };
 
   return (

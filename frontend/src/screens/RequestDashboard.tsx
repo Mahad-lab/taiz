@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
+import { customerTabRoute } from "@/lib/nav";
 import { STATUS_ROUTE, type Route } from "@/lib/router";
 import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
@@ -47,8 +48,9 @@ export function RequestDashboard({ navigate }: RequestDashboardProps) {
   };
 
   const onTab = (tab: NavTabId) => {
-    if (tab === "tasks") return navigate("dashboard");
-    showToast(`${titleCase(tab)} — coming soon`);
+    const target = customerTabRoute(tab, request);
+    if (target) return navigate(target);
+    showToast(tab === "review" ? "Nothing to review yet" : `${titleCase(tab)} — coming soon`);
   };
 
   const activeTask = request && request.status !== "declined" ? request : null;

@@ -8,10 +8,16 @@ export type Route =
   | "chat"
   | "magic"
   | "negotiation"
+  | "agent-chat-log"
+  | "activity"
+  | "history"
   | "review"
   | "approval"
   | "confirmed"
-  | "provider";
+  | "provider"
+  | "provider-negotiation"
+  | "provider-explore"
+  | "provider-profile";
 
 const ROUTE_ORDER: Route[] = [
   "welcome",
@@ -19,10 +25,16 @@ const ROUTE_ORDER: Route[] = [
   "chat",
   "magic",
   "negotiation",
+  "agent-chat-log",
+  "activity",
+  "history",
   "review",
   "approval",
   "confirmed",
   "provider",
+  "provider-negotiation",
+  "provider-explore",
+  "provider-profile",
 ];
 
 /** Where a request at a given status should be resumed from. */

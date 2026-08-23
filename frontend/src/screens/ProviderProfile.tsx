@@ -2,13 +2,12 @@ import { LogOut, MapPin, RotateCcw, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Toggle } from "@/components/ui/toggle";
-import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { DEMO } from "@/lib/agent";
-import { providerTabRoute } from "@/lib/nav";
+import { providerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
-import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
 
 interface ProviderProfileProps {
@@ -19,12 +18,7 @@ interface ProviderProfileProps {
 export function ProviderProfile({ navigate }: ProviderProfileProps) {
   const { jobs, agentActive, toggleAgent, reset, showToast } = useApp();
 
-  const onTab = (tab: NavTabId) => {
-    if (tab === "profile") return;
-    const target = providerTabRoute(tab);
-    if (target) return navigate(target);
-    showToast(`${titleCase(tab)} — coming soon`);
-  };
+  const onTab = providerTabHandler(navigate, showToast);
 
   const confirmed = jobs.filter(job => job.status === "confirmed").length;
   const awaiting = jobs.filter(job => job.status === "pending").length;

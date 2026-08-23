@@ -1,13 +1,12 @@
 import { Bot, MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { DEMO } from "@/lib/agent";
-import { providerTabRoute } from "@/lib/nav";
+import { providerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
-import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
 
 interface ProviderExploreProps {
@@ -50,12 +49,7 @@ const REQUESTS: IncomingRequest[] = [
 export function ProviderExplore({ navigate }: ProviderExploreProps) {
   const { agentActive, showToast } = useApp();
 
-  const onTab = (tab: NavTabId) => {
-    if (tab === "explore") return;
-    const target = providerTabRoute(tab);
-    if (target) return navigate(target);
-    showToast(`${titleCase(tab)} — coming soon`);
-  };
+  const onTab = providerTabHandler(navigate, showToast);
 
   return (
     <DeviceFrame>

@@ -2,12 +2,11 @@ import { CircleCheck, ThumbsUp, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { DesktopHeader } from "@/components/layout/DesktopHeader";
 import { DEMO } from "@/lib/agent";
-import { customerTabRoute } from "@/lib/nav";
+import { customerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
-import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
 
 import cake from "@/assets/cake.svg";
@@ -35,15 +34,15 @@ export function HumanReview({ navigate }: HumanReviewProps) {
     navigate("dashboard");
   };
 
-  const onTab = (tab: NavTabId) => {
-    const target = customerTabRoute(tab, request);
-    if (target) return navigate(target);
-    showToast(tab === "review" ? "Nothing to review yet" : `${titleCase(tab)} — coming soon`);
-  };
+  const onTab = customerTabHandler(navigate, request, showToast);
 
   return (
     <div className="flex min-h-dvh flex-col bg-soft-sand">
-      <DesktopHeader active="review" onSelect={onTab} />
+      <DesktopHeader
+        active="review"
+        onSelect={onTab}
+        onSettings={() => showToast("Settings — coming soon")}
+      />
 
       <main className="mx-auto flex w-full max-w-[600px] flex-1 flex-col justify-center px-4 pb-24 pt-8 md:pb-8">
         <article className="overflow-hidden rounded-lg border border-deep-slate/10 bg-white">

@@ -2,12 +2,11 @@ import { ArrowRight, Bot, CakeSlice, Coffee, Inbox, Plus, Search, Settings, Shir
 import { useState, type FormEvent } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
-import { customerTabRoute } from "@/lib/nav";
+import { customerTabHandler } from "@/lib/nav";
 import { STATUS_ROUTE, type Route } from "@/lib/router";
-import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
 import type { RequestStatus } from "@/state/types";
 
@@ -47,11 +46,7 @@ export function RequestDashboard({ navigate }: RequestDashboardProps) {
     launch();
   };
 
-  const onTab = (tab: NavTabId) => {
-    const target = customerTabRoute(tab, request);
-    if (target) return navigate(target);
-    showToast(tab === "review" ? "Nothing to review yet" : `${titleCase(tab)} — coming soon`);
-  };
+  const onTab = customerTabHandler(navigate, request, showToast);
 
   const activeTask = request && request.status !== "declined" ? request : null;
 

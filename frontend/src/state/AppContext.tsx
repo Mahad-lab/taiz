@@ -91,6 +91,14 @@ function isRequest(value: unknown): value is TaizRequest {
   return (
     typeof req.id === "string" &&
     typeof req.item === "string" &&
+    typeof req.budget === "number" &&
+    typeof req.provider === "string" &&
+    typeof req.providerRating === "number" &&
+    typeof req.initialPrice === "number" &&
+    typeof req.finalPrice === "number" &&
+    typeof req.pickupLocation === "string" &&
+    typeof req.pickupDay === "string" &&
+    typeof req.pickupTime === "string" &&
     typeof req.status === "string" &&
     Array.isArray(req.messages)
   );
@@ -142,7 +150,7 @@ function reducer(state: AppState, action: Action): AppState {
         day: state.request.pickupDay,
         time: state.request.pickupTime,
         price: state.request.finalPrice,
-        location: "Gulberg, Lahore",
+        location: state.request.pickupLocation,
         status: "confirmed",
       };
       return {

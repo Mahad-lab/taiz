@@ -1,13 +1,12 @@
 import { Check, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { PAST_ORDERS } from "@/lib/agent";
-import { customerTabRoute } from "@/lib/nav";
+import { customerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
-import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
 
 interface HistoryProps {
@@ -20,12 +19,7 @@ export function History({ navigate }: HistoryProps) {
   const current =
     request && (request.status === "confirmed" || request.status === "declined") ? request : null;
 
-  const onTab = (tab: NavTabId) => {
-    if (tab === "history") return;
-    const target = customerTabRoute(tab, request);
-    if (target) return navigate(target);
-    showToast(tab === "review" ? "Nothing to review yet" : `${titleCase(tab)} — coming soon`);
-  };
+  const onTab = customerTabHandler(navigate, request, showToast);
 
   return (
     <DeviceFrame>

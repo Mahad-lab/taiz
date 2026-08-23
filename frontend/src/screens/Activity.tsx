@@ -1,13 +1,12 @@
 import { Inbox } from "lucide-react";
 
-import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { Timeline } from "@/components/shared/Timeline";
 import { buildActivitySteps } from "@/lib/agent";
-import { customerTabRoute } from "@/lib/nav";
+import { customerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
-import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
 
 interface ActivityProps {
@@ -19,12 +18,7 @@ export function Activity({ navigate }: ActivityProps) {
   const { request, showToast } = useApp();
   const steps = request ? buildActivitySteps(request.status) : null;
 
-  const onTab = (tab: NavTabId) => {
-    if (tab === "activity") return;
-    const target = customerTabRoute(tab, request);
-    if (target) return navigate(target);
-    showToast(tab === "review" ? "Nothing to review yet" : `${titleCase(tab)} — coming soon`);
-  };
+  const onTab = customerTabHandler(navigate, request, showToast);
 
   return (
     <DeviceFrame>

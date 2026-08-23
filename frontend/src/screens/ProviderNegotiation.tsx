@@ -28,7 +28,6 @@ const STEPS: ProviderStep[] = [
 export function ProviderNegotiation({ navigate }: ProviderNegotiationProps) {
   const { agentActive, showToast } = useApp();
   const [step, setStep] = useState(0);
-  const [cancelled, setCancelled] = useState(false);
 
   useEffect(() => {
     let disposed = false;
@@ -39,9 +38,6 @@ export function ProviderNegotiation({ navigate }: ProviderNegotiationProps) {
       await sleep(TIMINGS.timelineHold);
       if (disposed) return;
       setStep(2);
-      await sleep(1_400);
-      if (disposed) return;
-      setCancelled(true);
     };
     run();
     return () => {

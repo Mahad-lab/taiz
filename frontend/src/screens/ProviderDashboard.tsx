@@ -3,12 +3,11 @@ import { Bot, MapPin, Menu, Timer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { BottomNav, type NavTabId } from "@/components/layout/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
-import { providerTabRoute } from "@/lib/nav";
+import { providerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
-import { titleCase } from "@/lib/utils";
 import { useApp } from "@/state/AppContext";
 
 interface ProviderDashboardProps {
@@ -18,11 +17,7 @@ interface ProviderDashboardProps {
 export function ProviderDashboard({ navigate }: ProviderDashboardProps) {
   const { jobs, agentActive, toggleAgent, acceptJob, showToast } = useApp();
 
-  const onTab = (tab: NavTabId) => {
-    const target = providerTabRoute(tab);
-    if (target) return navigate(target);
-    showToast(`${titleCase(tab)} — coming soon`);
-  };
+  const onTab = providerTabHandler(navigate, showToast);
 
   return (
     <DeviceFrame>

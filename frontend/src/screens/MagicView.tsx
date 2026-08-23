@@ -23,7 +23,7 @@ export function MagicView({ navigate }: MagicViewProps) {
 
   const waitForResume = () =>
     new Promise<void>(resolve => {
-      const check = () => (pausedRef.current ? setTimeout(check, 120) : resolve());
+      const check = () => (pausedRef.current && !cancelled.current ? setTimeout(check, 120) : resolve());
       check();
     });
 

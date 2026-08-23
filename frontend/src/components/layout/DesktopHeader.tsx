@@ -13,11 +13,12 @@ const TABS: { id: NavTabId; label: string }[] = [
 interface DesktopHeaderProps {
   active: NavTabId;
   onSelect?: (tab: NavTabId) => void;
+  onSettings?: () => void;
   dark?: boolean;
 }
 
 /** Full-width product header shown on md+ screens (Tasks / Activity / Review / History). */
-export function DesktopHeader({ active, onSelect, dark }: DesktopHeaderProps) {
+export function DesktopHeader({ active, onSelect, onSettings, dark }: DesktopHeaderProps) {
   return (
     <header
       className={cn(
@@ -45,7 +46,7 @@ export function DesktopHeader({ active, onSelect, dark }: DesktopHeaderProps) {
         ))}
       </nav>
       <button
-        onClick={() => onSelect?.("history")}
+        onClick={() => onSettings?.()}
         aria-label="Settings"
         className={cn("rounded-full p-2 transition-colors", dark ? "text-on-primary hover:bg-on-primary/10" : "text-primary hover:bg-surface-container-high/50")}
       >

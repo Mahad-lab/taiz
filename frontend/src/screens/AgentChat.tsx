@@ -61,7 +61,10 @@ export function AgentChat({ navigate }: AgentChatProps) {
   return (
     <DeviceFrame>
       <TopAppBar
-        onBack={() => navigate(STATUS_ROUTE[request?.status ?? "chatting"] ?? "dashboard")}
+        onBack={() => {
+          const status = request?.status;
+          navigate(status && status !== "chatting" ? (STATUS_ROUTE[status] ?? "dashboard") : "dashboard");
+        }}
         title={
           <div className="flex items-center gap-2">
             <span className="flex size-8 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">

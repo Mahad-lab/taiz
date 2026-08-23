@@ -1,20 +1,6 @@
 export type Role = "customer" | "provider";
 
-export type RequestStatus =
-  | "chatting"
-  | "searching"
-  | "negotiating"
-  | "review"
-  | "approved"
-  | "confirmed"
-  | "declined";
-
-export interface ChatMessage {
-  id: string;
-  from: "user" | "agent";
-  text: string;
-  time: string;
-}
+export type RequestStatus = "searching" | "negotiating" | "review" | "confirmed" | "declined";
 
 export interface TaizRequest {
   id: string;
@@ -24,12 +10,10 @@ export interface TaizRequest {
   providerRating: number;
   initialPrice: number;
   finalPrice: number;
-  counterOffer: boolean;
   pickupLocation: string;
   pickupDay: string;
   pickupTime: string;
   status: RequestStatus;
-  messages: ChatMessage[];
   createdAt: string;
 }
 
@@ -47,4 +31,13 @@ export interface ProviderJob {
 export interface Toast {
   id: number;
   message: string;
+}
+
+/** What the user allows their agent to do without asking first. */
+export interface Permissions {
+  communicate: boolean;
+  negotiate: boolean;
+  negotiateMax: number;
+  confirm: boolean;
+  transact: boolean;
 }

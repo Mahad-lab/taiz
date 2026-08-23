@@ -54,11 +54,11 @@ export function OrderConfirmation({ navigate }: OrderConfirmationProps) {
         </div>
 
         <Button
-          onClick={() => navigate("dashboard")}
+          onClick={() => navigate("home")}
           size="lg"
           className="mt-10 w-full shadow-md"
         >
-          Back to Dashboard
+          Back to Home
         </Button>
       </div>
     </DeviceFrame>

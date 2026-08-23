@@ -80,6 +80,12 @@
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
 
+  /* Warning — restrained amber, used sparingly for pending/awaiting states */
+  --color-warning: #8a5a00;
+  --color-on-warning: #ffffff;
+  --color-warning-container: #ffe8b8;
+  --color-on-warning-container: #2b1900;
+
   /* shadcn semantic mapping */
   --color-background: #fdf9f3;
   --color-foreground: #131d21;

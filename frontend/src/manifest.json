@@ -1,0 +1,17 @@
+{
+  "name": "Taiz — Your Personal AI for Local Services",
+  "short_name": "Taiz",
+  "description": "Tell Taiz what you need. Your agent finds, negotiates, and books it for you.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDF9F3",
+  "theme_color": "#00B894",
+  "icons": [
+    {
+      "src": "./logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

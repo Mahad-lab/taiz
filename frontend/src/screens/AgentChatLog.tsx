@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
+import { TypingDots } from "@/components/shared/TypingDots";
 import { buildAgentChat, sleep, type AgentChatLine } from "@/lib/agent";
 import { cn } from "@/lib/utils";
 import type { Route } from "@/lib/router";
@@ -13,7 +14,7 @@ interface AgentChatLogProps {
 
 const REVEAL_MS = 700;
 
-/** Read-only transcript of the agent-to-agent negotiation between the two agents. */
+/** Human-readable transcript of the agent-to-agent negotiation. */
 export function AgentChatLog({ navigate }: AgentChatLogProps) {
   const lines = useRef(buildAgentChat()).current;
   const [visible, setVisible] = useState(0);
@@ -42,29 +43,19 @@ export function AgentChatLog({ navigate }: AgentChatLogProps) {
   return (
     <DeviceFrame>
       <TopAppBar
-        onBack={() => navigate("negotiation")}
+        onBack={() => navigate("agent-activity")}
         title={
-          <div className="flex items-center gap-2">
-            <h1 className="text-[17px] font-semibold leading-5 text-primary">Agent Chat Log</h1>
-            <span className="rounded-sm border border-secondary/30 bg-secondary/10 px-1.5 py-0.5 font-mono text-[10px] text-secondary">
-              A2A
-            </span>
+          <div>
+            <h1 className="text-[17px] font-semibold leading-5 text-primary">Agent activity</h1>
+            <p className="font-mono text-[11px] text-on-surface-variant">Your Agent ↔ Provider Agent</p>
           </div>
-        }
-        right={
-          <span className="flex size-8 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
-            <Bot className="size-4" fill="currentColor" />
-          </span>
         }
       />
 
-      <main
-        ref={scrollRef}
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-soft-sand px-4 py-4"
-      >
+      <main ref={scrollRef} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
         <div className="flex justify-center">
-          <span className="rounded-sm border border-outline-variant/10 bg-surface-variant/50 px-2 py-1 font-mono text-[11px] text-on-surface-variant">
-            Negotiating live — no human input needed
+          <span className="rounded-sm border border-outline-variant/20 bg-surface-container-lowest px-2 py-1 font-mono text-[11px] text-on-surface-variant">
+            Negotiating on your behalf — no input needed
           </span>
         </div>
 
@@ -74,15 +65,7 @@ export function AgentChatLog({ navigate }: AgentChatLogProps) {
 
         {visible < lines.length && (
           <div className="flex items-center gap-1.5 pl-1 font-mono text-[11px] text-on-surface-variant/70">
-            <span className="flex gap-0.5">
-              {[0, 1, 2].map(d => (
-                <span
-                  key={d}
-                  className="size-1 animate-bounce rounded-full bg-secondary"
-                  style={{ animationDelay: `${d * 160}ms` }}
-                />
-              ))}
-            </span>
+            <TypingDots />
             agents negotiating
           </div>
         )}
@@ -101,19 +84,16 @@ function AgentLine({ line }: { line: AgentChatLine }) {
         ) : (
           <Store className="size-3.5 text-on-surface-variant" />
         )}
-        <span className="font-mono text-[11px] text-on-surface-variant">
-          {yours ? "Your Agent" : "Bakery Agent"}
-        </span>
+        <span className="font-mono text-[11px] text-on-surface-variant">{yours ? "Your Agent" : "Provider Agent"}</span>
       </div>
       <div
         className={cn(
           "max-w-[85%] rounded-lg p-3 text-[14px] leading-5 shadow-sm",
-          yours
-            ? "rounded-tl-sm border-l-2 border-secondary bg-white text-on-surface"
-            : "rounded-tr-sm border border-outline-variant/20 bg-surface-container-lowest text-on-surface",
+          line.offer ? "border-l-2 border-electric-mint bg-electric-mint/5" : "border border-outline-variant/20 bg-white",
+          yours ? "rounded-tl-sm" : "rounded-tr-sm",
         )}
       >
-        <p>{line.text}</p>
+        <p className="text-on-surface">{line.text}</p>
       </div>
       <span className="font-mono text-[10px] text-on-surface-variant/70">{line.time}</span>
     </div>

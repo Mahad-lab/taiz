@@ -65,7 +65,8 @@ export function BottomNav({ variant, active, onSelect, dark }: BottomNavProps) {
                 : cn("border-transparent", dark ? "text-on-primary/60" : "text-on-surface-variant"),
             )}
           >
-            <Icon className={cn("size-[22px]", isActive && "fill-current")} strokeWidth={1.8} />
+            {/* Removed isActive && "fill-current" below */}
+            <Icon className="size-[22px]" strokeWidth={1.8} />
             <span className="font-mono text-[11px]">{tab.label}</span>
           </button>
         );

@@ -13,7 +13,13 @@ interface AgentTaskProps {
 
 export function AgentTask({ navigate }: AgentTaskProps) {
   const { request, declineOrder, setStatus, permissions, showToast } = useApp();
-  const steps = useRef(buildAgentTaskSteps()).current;
+
+  // FIX: Initialize ref lazily so buildAgentTaskSteps() runs ONCE on initial mount only
+  const stepsRef = useRef<ReturnType<typeof buildAgentTaskSteps> | null>(null);
+  if (!stepsRef.current) {
+    stepsRef.current = buildAgentTaskSteps();
+  }
+  const steps = stepsRef.current;
   const [visible, setVisible] = useState(0);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
@@ -46,7 +52,7 @@ export function AgentTask({ navigate }: AgentTaskProps) {
     return () => {
       cancelled.current = true;
     };
-  }, [steps, navigate, setStatus]);
+  }, [navigate, setStatus]); // Removed `steps` from dependencies as it's a stable ref value
 
   const togglePause = () => {
     pausedRef.current = !pausedRef.current;

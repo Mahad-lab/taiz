@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 
 import { DEMO, nextId } from "@/lib/agent";
 import type { Permissions, ProviderJob, RequestStatus, Role, TaizRequest, Toast } from "./types";
@@ -226,16 +226,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     ...state,
-    startRequest: () => dispatch({ type: "START_REQUEST" }),
-    setStatus: status => dispatch({ type: "SET_STATUS", status }),
-    confirmOrder: () => dispatch({ type: "CONFIRM_ORDER" }),
-    declineOrder: () => dispatch({ type: "DECLINE_ORDER" }),
-    acceptJob: id => dispatch({ type: "ACCEPT_JOB", id }),
-    setRole: role => dispatch({ type: "SET_ROLE", role }),
-    toggleAgent: () => dispatch({ type: "TOGGLE_AGENT" }),
-    setPermission: permissions => dispatch({ type: "SET_PERMISSION", permissions }),
-    reset: () => dispatch({ type: "RESET" }),
-    showToast: message => dispatch({ type: "SHOW_TOAST", message }),
+    startRequest: useCallback(() => dispatch({ type: "START_REQUEST" }), []),
+    setStatus: useCallback((status: RequestStatus) => dispatch({ type: "SET_STATUS", status }), []),
+    confirmOrder: useCallback(() => dispatch({ type: "CONFIRM_ORDER" }), []),
+    declineOrder: useCallback(() => dispatch({ type: "DECLINE_ORDER" }), []),
+    acceptJob: useCallback((id: string) => dispatch({ type: "ACCEPT_JOB", id }), []),
+    setRole: useCallback((role: Role) => dispatch({ type: "SET_ROLE", role }), []),
+    toggleAgent: useCallback(() => dispatch({ type: "TOGGLE_AGENT" }), []),
+    setPermission: useCallback((permissions: Permissions) => dispatch({ type: "SET_PERMISSION", permissions }), []),
+    reset: useCallback(() => dispatch({ type: "RESET" }), []),
+    showToast: useCallback((message: string) => dispatch({ type: "SHOW_TOAST", message }), []),
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -11,12 +11,12 @@ describe("full flow", () => {
   test("ask → compare → order → approval gate → confirmed", async () => {
     const { app } = buildTestApp();
 
-    // 1. Personal agent asks for croissants across Riyadh bakeries
+    // 1. Personal agent asks for croissants across Karachi bakeries
     const asked = await postJson(app, "/agents/agent-user/message", {
       intent: "check_availability",
       item: "Croissant",
       quantity: 6,
-      city: "Riyadh",
+      city: "Karachi",
       category: "bakery",
     });
     expect(asked.status).toBe(200);

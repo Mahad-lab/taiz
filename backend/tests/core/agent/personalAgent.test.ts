@@ -6,9 +6,9 @@ import type { BusinessAgentLookup } from "../../../src/core/agent/personalAgent"
 
 function directory() {
   const store = createDirectoryStore();
-  store.add({ id: "biz-a", name: "A Bakery", category: "bakery", city: "Riyadh", neighborhood: "Al Olaya" });
-  store.add({ id: "biz-b", name: "B Bakery", category: "bakery", city: "Riyadh", neighborhood: "Al Malqa" });
-  store.add({ id: "biz-c", name: "C Restaurant", category: "restaurant", city: "Riyadh", neighborhood: "Al Olaya" });
+  store.add({ id: "biz-a", name: "A Bakery", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 1" });
+  store.add({ id: "biz-b", name: "B Bakery", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 2" });
+  store.add({ id: "biz-c", name: "C Restaurant", category: "restaurant", city: "Karachi", neighborhood: "DHA Phase 1" });
   return store;
 }
 
@@ -40,7 +40,7 @@ describe("personalAgent fan-out", () => {
     const comparison = await compareAvailability(directory(), lookup, {
       item: "Croissant",
       quantity: 6,
-      city: "Riyadh",
+      city: "Karachi",
       category: "bakery",
     });
 
@@ -61,7 +61,7 @@ describe("personalAgent fan-out", () => {
     const comparison = await compareAvailability(directory(), lookup, {
       item: "Croissant",
       quantity: 1,
-      city: "Riyadh",
+      city: "Karachi",
       category: "bakery",
     });
 
@@ -75,7 +75,7 @@ describe("personalAgent fan-out", () => {
     const comparison = await compareAvailability(directory(), lookup, {
       item: "Croissant",
       quantity: 1,
-      city: "Riyadh",
+      city: "Karachi",
       category: "restaurant",
     });
     expect(comparison.replies).toEqual([]);

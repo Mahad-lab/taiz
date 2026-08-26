@@ -12,14 +12,14 @@ describe("GET /businesses", () => {
 
   test("filters by city + category", async () => {
     const { app } = buildTestApp();
-    const res = await app.request("/businesses?city=Riyadh&category=bakery");
+    const res = await app.request("/businesses?city=Karachi&category=bakery");
     const json: any = await readJson(res);
     expect(json.data.businesses.map((b: { id: string }) => b.id).sort()).toEqual(["biz-oven", "biz-sunrise"]);
   });
 
   test("rejects an unknown category", async () => {
     const { app } = buildTestApp();
-    const res = await app.request("/businesses?city=Riyadh&category=plumber");
+    const res = await app.request("/businesses?city=Karachi&category=plumber");
     expect(res.status).toBe(400);
   });
 });

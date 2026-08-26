@@ -3,22 +3,22 @@ import { createDirectoryStore } from "../../../src/core/directory/directoryStore
 
 function storeWithSample() {
   const directory = createDirectoryStore();
-  directory.add({ id: "biz-sunrise", name: "Sunrise Bakehouse", category: "bakery", city: "Riyadh", neighborhood: "Al Olaya" });
-  directory.add({ id: "biz-oven", name: "Neighborhood Oven", category: "bakery", city: "Riyadh", neighborhood: "Al Malqa" });
-  directory.add({ id: "biz-olive", name: "Olive Table", category: "restaurant", city: "Riyadh", neighborhood: "Al Olaya" });
+  directory.add({ id: "biz-sunrise", name: "Sunrise Bakehouse", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 1" });
+  directory.add({ id: "biz-oven", name: "Neighborhood Oven", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 2" });
+  directory.add({ id: "biz-olive", name: "Olive Table", category: "restaurant", city: "Karachi", neighborhood: "DHA Phase 1" });
   return directory;
 }
 
 describe("directoryStore", () => {
   test("filters by city and category", () => {
     const directory = storeWithSample();
-    const ids = directory.findByArea({ city: "riyadh" }, "bakery").map((l) => l.id);
+    const ids = directory.findByArea({ city: "Karachi" }, "bakery").map((l) => l.id);
     expect(ids).toEqual(["biz-sunrise", "biz-oven"]);
   });
 
   test("filters by neighborhood too", () => {
     const directory = storeWithSample();
-    const ids = directory.findByArea({ city: "Riyadh", neighborhood: "al olaya" }).map((l) => l.id);
+    const ids = directory.findByArea({ city: "Karachi", neighborhood: "DHA Phase 1" }).map((l) => l.id);
     expect(ids).toEqual(["biz-sunrise", "biz-olive"]);
   });
 

@@ -7,7 +7,7 @@ describe("POST /agents/:id/message", () => {
     const res = await postJson(app, "/agents/agent-user/message", {
       item: "Croissant",
       quantity: 6,
-      city: "Riyadh",
+      city: "Karachi",
       category: "bakery",
     });
     expect(res.status).toBe(200);

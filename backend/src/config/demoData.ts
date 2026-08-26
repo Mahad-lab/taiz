@@ -11,22 +11,22 @@ export function seedDemoData(directory: DirectoryStore, catalog: CatalogStore): 
       id: "biz-sunrise",
       name: "Sunrise Bakehouse",
       category: "bakery" as const,
-      city: "Riyadh",
-      neighborhood: "Al Olaya",
+      city: "Karachi",
+      neighborhood: "DHA Phase 1",
     },
     {
       id: "biz-oven",
       name: "Neighborhood Oven",
       category: "bakery" as const,
-      city: "Riyadh",
-      neighborhood: "Al Malqa",
+      city: "Karachi",
+      neighborhood: "DHA Phase 2",
     },
     {
       id: "biz-olive",
       name: "Olive Table",
       category: "restaurant" as const,
-      city: "Riyadh",
-      neighborhood: "Al Olaya",
+      city: "Karachi",
+      neighborhood: "DHA Phase 1",
     },
   ];
   for (const listing of listings) directory.add(listing);

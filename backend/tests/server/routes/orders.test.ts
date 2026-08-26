@@ -75,3 +75,43 @@ describe("order lifecycle endpoints", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("GET /orders", () => {
+  test("lists all orders; empty when none created", async () => {
+    const { app } = buildTestApp();
+    const empty = await app.request("/orders");
+    expect(empty.status).toBe(200);
+    expect((await readJson(empty)).data.orders).toEqual([]);
+
+    await createOrder(app);
+    await postJson(app, "/orders", {
+      personalAgentId: "agent-user",
+      businessId: "biz-oven",
+      items: [{ productId: "p-4", quantity: 2 }],
+    });
+    const res = await app.request("/orders");
+    expect((await readJson(res)).data.orders).toHaveLength(2);
+  });
+
+  test("filters by businessId", async () => {
+    const { app } = buildTestApp();
+    await createOrder(app); // biz-sunrise
+    await postJson(app, "/orders", {
+      personalAgentId: "agent-user",
+      businessId: "biz-oven",
+      items: [{ productId: "p-4", quantity: 2 }],
+    });
+
+    const sunrise = await app.request("/orders?businessId=biz-sunrise");
+    const sunriseOrders = (await readJson(sunrise)).data.orders as any[];
+    expect(sunriseOrders).toHaveLength(1);
+    expect(sunriseOrders[0].businessId).toBe("biz-sunrise");
+    expect(sunriseOrders[0].lines[0].etaMinutes).toBe(15); // from catalog p-1
+
+    const oven = await app.request("/orders?businessId=biz-oven");
+    expect((await readJson(oven)).data.orders).toHaveLength(1);
+
+    const none = await app.request("/orders?businessId=biz-olive");
+    expect((await readJson(none)).data.orders).toHaveLength(0);
+  });
+});

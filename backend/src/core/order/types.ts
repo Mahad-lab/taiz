@@ -17,6 +17,8 @@ export interface OrderLine {
   /** Fixed listed price captured at order time. */
   unitPrice: number;
   quantity: number;
+  /** Captured from the catalog at order time so confirmation/provider UIs can show ETA. */
+  etaMinutes?: number;
 }
 
 export interface Order {

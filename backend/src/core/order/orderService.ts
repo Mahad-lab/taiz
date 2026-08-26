@@ -3,6 +3,8 @@ import { ALLOWED_TRANSITIONS, type Order, type OrderLine, type OrderStatus } fro
 export interface OrderStore {
   save(order: Order): void;
   get(orderId: string): Order | undefined;
+  listAll(): Order[];
+  listByBusiness(businessId: string): Order[];
 }
 
 export type OrderErrorCode = "invalid_order" | "not_found" | "invalid_transition";
@@ -27,6 +29,8 @@ export interface CreateOrderInput {
 export interface OrderService {
   create(input: CreateOrderInput): Order;
   get(orderId: string): Order;
+  listAll(): Order[];
+  listByBusiness(businessId: string): Order[];
   approve(orderId: string): Order;
   confirm(orderId: string): Order;
   reject(orderId: string): Order;
@@ -89,5 +93,8 @@ export function createOrderService(
     approve: (orderId) => transition(orderId, "approved"),
     confirm: (orderId) => transition(orderId, "confirmed"),
     reject: (orderId) => transition(orderId, "rejected"),
+
+    listAll: () => store.listAll(),
+    listByBusiness: (businessId) => store.listByBusiness(businessId),
   };
 }

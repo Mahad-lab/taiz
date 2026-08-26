@@ -6,5 +6,7 @@ export function createInMemoryOrderStore(): OrderStore {
   return {
     save: (order) => void orders.set(order.id, order),
     get: (orderId) => orders.get(orderId),
+    listAll: () => [...orders.values()],
+    listByBusiness: (businessId) => [...orders.values()].filter((o) => o.businessId === businessId),
   };
 }

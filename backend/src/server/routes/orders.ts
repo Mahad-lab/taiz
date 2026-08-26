@@ -19,6 +19,12 @@ const createOrderSchema = z.object({
 export function ordersRoutes(deps: AppDeps): Hono {
   const app = new Hono();
 
+  app.get("/", (c) => {
+    const businessId = c.req.query("businessId");
+    const orders = businessId ? deps.orders.listByBusiness(businessId) : deps.orders.listAll();
+    return ok(c, { orders });
+  });
+
   app.post("/", async (c) => {
     const body = createOrderSchema.parse(await c.req.json());
     const listing = deps.directory.getById(body.businessId);
@@ -38,6 +44,7 @@ export function ordersRoutes(deps: AppDeps): Hono {
         name: product.name,
         unitPrice: product.price,
         quantity: item.quantity,
+        etaMinutes: product.etaMinutes,
       });
     }
 

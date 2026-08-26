@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as Switch from "@radix-ui/react-switch";
 import { cn } from "@/lib/utils";
 
 interface ToggleProps {
@@ -9,31 +9,29 @@ interface ToggleProps {
   disabled?: boolean;
 }
 
-/** Branded switch toggle (Deep Slate / Electric Mint), per the provider dashboard design. */
+/** Branded switch toggle (Deep Slate / Electric Mint), built on Radix UI Switch. */
 export function Toggle({ checked, onChange, className, label, disabled }: ToggleProps) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
+    <Switch.Root
+      checked={checked}
+      onCheckedChange={onChange}
       disabled={disabled}
-      onClick={() => onChange(!checked)}
+      aria-label={label}
       className={cn(
-        "relative h-8 w-14 shrink-0 rounded-full border transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        checked ? "bg-electric-mint" : "bg-deep-slate",
-        disabled && "cursor-not-allowed opacity-50",
+        "relative h-8 w-14 shrink-0 rounded-full border outline-none transition-colors duration-300",
+        "data-[state=checked]:border-electric-mint data-[state=checked]:bg-electric-mint",
+        "data-[state=unchecked]:border-deep-slate data-[state=unchecked]:bg-deep-slate",
+        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >
-      <span
+      <Switch.Thumb
         className={cn(
-          // Added `left-0` to explicitly anchor the absolute positioning
-          "absolute top-[3px] left-0 size-6 rounded-full bg-white shadow-sm transition-transform duration-300",
-          // Changed [1.9rem] to 7 for perfect symmetrical 4px padding
-          checked ? "translate-x-7" : "translate-x-1",
+          "absolute top-[3px] left-0 block size-6 rounded-full bg-white shadow-sm transition-transform duration-300",
+          "translate-x-1 data-[state=checked]:translate-x-7",
         )}
       />
-    </button>
+    </Switch.Root>
   );
 }

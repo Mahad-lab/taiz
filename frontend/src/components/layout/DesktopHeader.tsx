@@ -4,10 +4,10 @@ import { Logo } from "@/components/shared/Logo";
 import type { NavTabId } from "./BottomNav";
 
 const TABS: { id: NavTabId; label: string }[] = [
-  { id: "tasks", label: "Tasks" },
+  { id: "home", label: "Home" },
+  { id: "discover", label: "Discover" },
   { id: "activity", label: "Activity" },
-  { id: "review", label: "Review" },
-  { id: "history", label: "History" },
+  { id: "you", label: "You" },
 ];
 
 interface DesktopHeaderProps {
@@ -17,7 +17,7 @@ interface DesktopHeaderProps {
   dark?: boolean;
 }
 
-/** Full-width product header shown on md+ screens (Tasks / Activity / Review / History). */
+/** Full-width product header shown on md+ screens (Home / Discover / Activity / You). */
 export function DesktopHeader({ active, onSelect, onSettings, dark }: DesktopHeaderProps) {
   return (
     <header

@@ -14,6 +14,7 @@ const badgeVariants = cva(
         outline: "border-deep-slate/15 text-on-surface-variant",
         neutral: "border-outline-variant/40 bg-surface-variant/40 text-on-surface-variant",
         error: "border-error/30 bg-error/10 text-error",
+        warning: "border-warning/30 bg-warning-container/60 text-warning",
         solid: "border-transparent bg-electric-mint text-deep-slate",
       },
     },

@@ -1,17 +1,15 @@
 import {
   ArrowLeftRight,
-  BadgeCheck,
   Bot,
   Briefcase,
   Compass,
   Handshake,
-  History,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type NavTabId = "tasks" | "activity" | "review" | "history" | "jobs" | "explore" | "negotiations" | "profile";
+export type NavTabId = "home" | "discover" | "activity" | "you" | "jobs" | "explore" | "negotiations" | "profile";
 
 interface NavTab {
   id: NavTabId;
@@ -20,10 +18,10 @@ interface NavTab {
 }
 
 const CUSTOMER_TABS: NavTab[] = [
-  { id: "tasks", label: "Tasks", icon: Bot },
+  { id: "home", label: "Home", icon: Bot },
+  { id: "discover", label: "Discover", icon: Compass },
   { id: "activity", label: "Activity", icon: ArrowLeftRight },
-  { id: "review", label: "Review", icon: BadgeCheck },
-  { id: "history", label: "History", icon: History },
+  { id: "you", label: "You", icon: UserRound },
 ];
 
 const PROVIDER_TABS: NavTab[] = [
@@ -57,6 +55,7 @@ export function BottomNav({ variant, active, onSelect, dark }: BottomNavProps) {
           <button
             key={tab.id}
             onClick={() => onSelect?.(tab.id)}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
               "flex w-full flex-col items-center justify-center gap-1 border-t-2 pt-1 transition-colors active:scale-95",
               isActive
@@ -66,7 +65,8 @@ export function BottomNav({ variant, active, onSelect, dark }: BottomNavProps) {
                 : cn("border-transparent", dark ? "text-on-primary/60" : "text-on-surface-variant"),
             )}
           >
-            <Icon className={cn("size-[22px]", isActive && "fill-current")} strokeWidth={1.8} />
+            {/* Removed isActive && "fill-current" below */}
+            <Icon className="size-[22px]" strokeWidth={1.8} />
             <span className="font-mono text-[11px]">{tab.label}</span>
           </button>
         );

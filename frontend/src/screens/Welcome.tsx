@@ -13,12 +13,11 @@ interface WelcomeProps {
 }
 
 export function Welcome({ navigate }: WelcomeProps) {
-  const { setRole, startRequest } = useApp();
+  const { setRole } = useApp();
 
   const choose = (role: "customer" | "provider") => {
     setRole(role);
-    if (role === "customer") startRequest();
-    navigate(role === "customer" ? "dashboard" : "provider");
+    navigate(role === "customer" ? "home" : "provider");
   };
 
   return (

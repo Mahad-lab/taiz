@@ -1,34 +1,29 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 
-import { DEMO, initialMessages, nextId } from "@/lib/agent";
-import type {
-  ChatMessage,
-  ProviderJob,
-  RequestStatus,
-  Role,
-  TaizRequest,
-  Toast,
-} from "./types";
+import { DEMO, nextId } from "@/lib/agent";
+import type { Permissions, ProviderJob, RequestStatus, Role, TaizRequest, Toast } from "./types";
 
 interface AppState {
   role: Role | null;
   request: TaizRequest | null;
   jobs: ProviderJob[];
   agentActive: boolean;
+  permissions: Permissions;
   toast: Toast | null;
 }
+
+type PersistedState = Pick<AppState, "role" | "request" | "jobs" | "agentActive" | "permissions">;
 
 type Action =
   | { type: "SET_ROLE"; role: Role }
   | { type: "START_REQUEST" }
-  | { type: "ADD_MESSAGE"; message: ChatMessage }
   | { type: "SET_STATUS"; status: RequestStatus }
-  | { type: "SET_PICKUP"; day: string; time: string }
   | { type: "CONFIRM_ORDER" }
   | { type: "DECLINE_ORDER" }
   | { type: "ACCEPT_JOB"; id: string }
   | { type: "TOGGLE_AGENT" }
-  | { type: "HYDRATE"; payload: Pick<AppState, "role" | "request" | "jobs" | "agentActive"> }
+  | { type: "SET_PERMISSION"; permissions: Partial<Permissions> }
+  | { type: "HYDRATE"; payload: PersistedState }
   | { type: "RESET" }
   | { type: "SHOW_TOAST"; message: string }
   | { type: "CLEAR_TOAST" };
@@ -66,22 +61,31 @@ const INITIAL_JOBS: ProviderJob[] = [
   },
 ];
 
+const INITIAL_PERMISSIONS: Permissions = {
+  communicate: true,
+  negotiate: true,
+  negotiateMax: 5000,
+  confirm: false,
+  transact: false,
+};
+
 const STORAGE_KEY = "taiz:state";
 
 /** localStorage (not sessionStorage) so the provider side in another tab/window sees cross-tab updates. */
-function loadPersisted(): Pick<AppState, "role" | "request" | "jobs" | "agentActive"> {
+function loadPersisted(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true };
+    if (!raw) return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true, permissions: INITIAL_PERMISSIONS };
     const parsed = JSON.parse(raw) as Partial<AppState>;
     return {
       role: parsed.role ?? null,
       request: isRequest(parsed.request) ? parsed.request : null,
       jobs: parsed.jobs?.length ? parsed.jobs : INITIAL_JOBS,
       agentActive: parsed.agentActive ?? true,
+      permissions: { ...INITIAL_PERMISSIONS, ...parsed.permissions },
     };
   } catch {
-    return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true };
+    return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true, permissions: INITIAL_PERMISSIONS };
   }
 }
 
@@ -99,8 +103,7 @@ function isRequest(value: unknown): value is TaizRequest {
     typeof req.pickupLocation === "string" &&
     typeof req.pickupDay === "string" &&
     typeof req.pickupTime === "string" &&
-    typeof req.status === "string" &&
-    Array.isArray(req.messages)
+    typeof req.status === "string"
   );
 }
 
@@ -113,12 +116,10 @@ function makeRequest(): TaizRequest {
     providerRating: DEMO.providerRating,
     initialPrice: DEMO.initialPrice,
     finalPrice: DEMO.finalPrice,
-    counterOffer: true,
     pickupLocation: DEMO.pickupLocation,
     pickupDay: DEMO.pickupDay,
     pickupTime: DEMO.pickupTime,
-    status: "chatting",
-    messages: initialMessages(),
+    status: "searching",
     createdAt: new Date().toISOString(),
   };
 }
@@ -129,18 +130,9 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, role: action.role };
     case "START_REQUEST":
       return { ...state, request: makeRequest() };
-    case "ADD_MESSAGE":
-      if (!state.request) return state;
-      return { ...state, request: { ...state.request, messages: [...state.request.messages, action.message] } };
     case "SET_STATUS":
       if (!state.request) return state;
       return { ...state, request: { ...state.request, status: action.status } };
-    case "SET_PICKUP":
-      if (!state.request) return state;
-      return {
-        ...state,
-        request: { ...state.request, pickupDay: action.day, pickupTime: action.time },
-      };
     case "CONFIRM_ORDER": {
       if (!state.request) return state;
       const job: ProviderJob = {
@@ -171,10 +163,12 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "TOGGLE_AGENT":
       return { ...state, agentActive: !state.agentActive };
+    case "SET_PERMISSION":
+      return { ...state, permissions: { ...state.permissions, ...action.permissions } };
     case "HYDRATE":
       return { ...state, ...action.payload };
     case "RESET":
-      return { ...state, role: null, request: null, jobs: INITIAL_JOBS, agentActive: true };
+      return { ...state, role: null, request: null, jobs: INITIAL_JOBS, agentActive: true, permissions: INITIAL_PERMISSIONS };
     case "SHOW_TOAST":
       return { ...state, toast: { id: Date.now(), message: action.message } };
     case "CLEAR_TOAST":
@@ -186,14 +180,13 @@ function reducer(state: AppState, action: Action): AppState {
 
 interface AppContextValue extends AppState {
   startRequest: () => void;
-  addMessage: (text: string, from: ChatMessage["from"]) => void;
   setStatus: (status: RequestStatus) => void;
-  setPickup: (day: string, time: string) => void;
   confirmOrder: () => void;
   declineOrder: () => void;
   acceptJob: (id: string) => void;
   setRole: (role: Role) => void;
   toggleAgent: () => void;
+  setPermission: (permissions: Partial<Permissions>) => void;
   reset: () => void;
   showToast: (message: string) => void;
 }
@@ -208,12 +201,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const { role, request, jobs, agentActive } = state;
+    const { role, request, jobs, agentActive, permissions } = state;
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ role, request, jobs, agentActive }),
+      JSON.stringify({ role, request, jobs, agentActive, permissions }),
     );
-  }, [state.role, state.request, state.jobs, state.agentActive]);
+  }, [state.role, state.request, state.jobs, state.agentActive, state.permissions]);
 
   useEffect(() => {
     if (!state.toast) return;
@@ -233,18 +226,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     ...state,
-    startRequest: () => dispatch({ type: "START_REQUEST" }),
-    addMessage: (text, from) =>
-      dispatch({ type: "ADD_MESSAGE", message: { id: nextId("msg"), from, text, time: "Now" } }),
-    setStatus: status => dispatch({ type: "SET_STATUS", status }),
-    setPickup: (day, time) => dispatch({ type: "SET_PICKUP", day, time }),
-    confirmOrder: () => dispatch({ type: "CONFIRM_ORDER" }),
-    declineOrder: () => dispatch({ type: "DECLINE_ORDER" }),
-    acceptJob: id => dispatch({ type: "ACCEPT_JOB", id }),
-    setRole: role => dispatch({ type: "SET_ROLE", role }),
-    toggleAgent: () => dispatch({ type: "TOGGLE_AGENT" }),
-    reset: () => dispatch({ type: "RESET" }),
-    showToast: message => dispatch({ type: "SHOW_TOAST", message }),
+    startRequest: useCallback(() => dispatch({ type: "START_REQUEST" }), []),
+    setStatus: useCallback((status: RequestStatus) => dispatch({ type: "SET_STATUS", status }), []),
+    confirmOrder: useCallback(() => dispatch({ type: "CONFIRM_ORDER" }), []),
+    declineOrder: useCallback(() => dispatch({ type: "DECLINE_ORDER" }), []),
+    acceptJob: useCallback((id: string) => dispatch({ type: "ACCEPT_JOB", id }), []),
+    setRole: useCallback((role: Role) => dispatch({ type: "SET_ROLE", role }), []),
+    toggleAgent: useCallback(() => dispatch({ type: "TOGGLE_AGENT" }), []),
+    setPermission: useCallback((permissions: Permissions) => dispatch({ type: "SET_PERMISSION", permissions }), []),
+    reset: useCallback(() => dispatch({ type: "RESET" }), []),
+    showToast: useCallback((message: string) => dispatch({ type: "SHOW_TOAST", message }), []),
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

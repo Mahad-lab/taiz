@@ -4,15 +4,14 @@ import type { RequestStatus } from "@/state/types";
 
 export type Route =
   | "welcome"
-  | "dashboard"
-  | "chat"
-  | "magic"
-  | "negotiation"
+  | "home"
+  | "discover"
+  | "you"
+  | "agent-task"
+  | "agent-activity"
   | "agent-chat-log"
   | "activity"
-  | "history"
   | "review"
-  | "approval"
   | "confirmed"
   | "provider"
   | "provider-negotiation"
@@ -21,15 +20,14 @@ export type Route =
 
 const ROUTE_ORDER: Route[] = [
   "welcome",
-  "dashboard",
-  "chat",
-  "magic",
-  "negotiation",
+  "home",
+  "discover",
+  "you",
+  "agent-task",
+  "agent-activity",
   "agent-chat-log",
   "activity",
-  "history",
   "review",
-  "approval",
   "confirmed",
   "provider",
   "provider-negotiation",
@@ -39,11 +37,9 @@ const ROUTE_ORDER: Route[] = [
 
 /** Where a request at a given status should be resumed from. */
 export const STATUS_ROUTE: Partial<Record<RequestStatus, Route>> = {
-  chatting: "chat",
-  searching: "magic",
-  negotiating: "negotiation",
+  searching: "agent-task",
+  negotiating: "agent-activity",
   review: "review",
-  approved: "approval",
   confirmed: "confirmed",
 };
 

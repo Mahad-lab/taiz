@@ -233,7 +233,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     acceptJob: useCallback((id: string) => dispatch({ type: "ACCEPT_JOB", id }), []),
     setRole: useCallback((role: Role) => dispatch({ type: "SET_ROLE", role }), []),
     toggleAgent: useCallback(() => dispatch({ type: "TOGGLE_AGENT" }), []),
-    setPermission: useCallback((permissions: Permissions) => dispatch({ type: "SET_PERMISSION", permissions }), []),
+    setPermission: useCallback((permissions: Partial<Permissions>) => dispatch({ type: "SET_PERMISSION", permissions }), []),
     reset: useCallback(() => dispatch({ type: "RESET" }), []),
     showToast: useCallback((message: string) => dispatch({ type: "SHOW_TOAST", message }), []),
   };

@@ -20,7 +20,7 @@ export function AgentInput({ value, onChange, onSubmit, onVoice, placeholder, au
       <textarea
         value={value}
         onChange={e => onChange(e.target.value)}
-        placeholder={placeholder ?? "Find a plumber near me tomorrow morning"}
+        placeholder={placeholder ?? "Find a best chocolate cake near me"}
         rows={1}
         autoFocus={autoFocus}
         onKeyDown={e => {

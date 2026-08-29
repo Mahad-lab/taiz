@@ -27,7 +27,7 @@ const CUSTOMER_TABS: NavTab[] = [
 const PROVIDER_TABS: NavTab[] = [
   { id: "jobs", label: "Jobs", icon: Briefcase },
   { id: "explore", label: "Explore", icon: Compass },
-  { id: "negotiations", label: "Negotiations", icon: Handshake },
+  { id: "negotiations", label: "Agent", icon: Bot },
   { id: "profile", label: "Profile", icon: UserRound },
 ];
 

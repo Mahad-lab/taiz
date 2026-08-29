@@ -1,4 +1,5 @@
 import { Check, Inbox, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -6,7 +7,8 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { Timeline } from "@/components/shared/Timeline";
-import { buildActivitySteps, PAST_ORDERS } from "@/lib/agent";
+import { buildActivitySteps } from "@/lib/agent";
+import * as api from "@/lib/api";
 import { customerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
@@ -15,15 +17,60 @@ interface ActivityProps {
   navigate: (route: Route) => void;
 }
 
-/** Transparent record of everything the agent has done — live and past. */
+interface HistoryRow {
+  id: string;
+  item: string;
+  provider: string;
+  price: number;
+  day: string;
+  status: "confirmed" | "declined";
+}
+
 export function Activity({ navigate }: ActivityProps) {
   const { request, showToast } = useApp();
+  const [history, setHistory] = useState<HistoryRow[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .listOrders()
+      .then(orders => {
+        if (cancelled) return;
+        setHistory(
+          orders
+            .filter(o => o.status === "confirmed" || o.status === "rejected")
+            .map(o => ({
+              id: o.id,
+              item: o.lines.map(l => l.name).join(", "),
+              provider: o.businessId,
+              price: o.total,
+              day: new Date(o.createdAt).toLocaleDateString([], { month: "short", day: "numeric" }),
+              status: o.status === "confirmed" ? "confirmed" : "declined",
+            })),
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [request?.status]);
+
   const live = request && request.status !== "confirmed" && request.status !== "declined";
-  const steps = live ? buildActivitySteps(request.status) : null;
-  const currentOrder = request && (request.status === "confirmed" || request.status === "declined") ? request : null;
+  const steps = live && request ? buildActivitySteps(request.status, request.item) : null;
+  const currentOrder =
+    request && (request.status === "confirmed" || request.status === "declined")
+      ? {
+          id: request.id,
+          item: request.chosenReply?.product?.name ?? request.item,
+          provider: request.chosenReply?.businessId ?? "—",
+          price: request.chosenReply?.price ?? 0,
+          day: request.status === "confirmed" ? "Today" : "Today",
+          status: request.status === "confirmed" ? ("confirmed" as const) : ("declined" as const),
+        }
+      : null;
 
   const onTab = customerTabHandler(navigate, showToast);
-  const hasAnyHistory = currentOrder || PAST_ORDERS.length > 0;
+  const hasAnyHistory = currentOrder || history.length > 0;
 
   return (
     <DeviceFrame>
@@ -41,16 +88,8 @@ export function Activity({ navigate }: ActivityProps) {
           <h2 className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">History</h2>
           {hasAnyHistory ? (
             <div className="flex flex-col gap-3">
-              {currentOrder && (
-                <OrderRow
-                  item={currentOrder.item}
-                  provider={currentOrder.provider}
-                  price={currentOrder.finalPrice}
-                  day={currentOrder.status === "confirmed" ? currentOrder.pickupDay : "Today"}
-                  status={currentOrder.status === "confirmed" ? "confirmed" : "declined"}
-                />
-              )}
-              {PAST_ORDERS.map(order => (
+              {currentOrder && <OrderRow {...currentOrder} />}
+              {history.map(order => (
                 <OrderRow key={order.id} {...order} />
               ))}
             </div>

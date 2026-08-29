@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TypingDots } from "@/components/shared/TypingDots";
-import { TIMINGS, buildAgentTaskSteps, sleep } from "@/lib/agent";
+import { buildAgentTaskSteps, sleep, TIMINGS } from "@/lib/agent";
+import * as api from "@/lib/api";
 import type { Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
 
@@ -12,14 +13,13 @@ interface AgentTaskProps {
 }
 
 export function AgentTask({ navigate }: AgentTaskProps) {
-  const { request, declineOrder, setStatus, permissions, showToast } = useApp();
+  const { request, setComparison, declineOrder, showToast } = useApp();
 
-  // FIX: Initialize ref lazily so buildAgentTaskSteps() runs ONCE on initial mount only
   const stepsRef = useRef<ReturnType<typeof buildAgentTaskSteps> | null>(null);
-  if (!stepsRef.current) {
-    stepsRef.current = buildAgentTaskSteps();
+  if (!stepsRef.current && request) {
+    stepsRef.current = buildAgentTaskSteps(request.item, request.city);
   }
-  const steps = stepsRef.current;
+  const steps = stepsRef.current ?? [];
   const [visible, setVisible] = useState(0);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
@@ -32,7 +32,13 @@ export function AgentTask({ navigate }: AgentTaskProps) {
     });
 
   useEffect(() => {
+    if (!request) {
+      navigate("home");
+      return;
+    }
     cancelled.current = false;
+    let finished = false;
+
     const run = async () => {
       for (let i = 1; i <= steps.length; i++) {
         await waitForResume();
@@ -45,14 +51,31 @@ export function AgentTask({ navigate }: AgentTaskProps) {
       if (cancelled.current) return;
       await sleep(TIMINGS.checklistHold);
       if (cancelled.current) return;
-      setStatus("negotiating");
-      navigate("agent-activity");
+
+      try {
+        const res = await api.compare({
+          item: request.item,
+          quantity: request.quantity,
+          city: request.city,
+          category: request.category,
+          neighborhood: request.neighborhood,
+        });
+        if (cancelled.current) return;
+        finished = true;
+        setComparison(res.comparison);
+        navigate("agent-activity");
+      } catch {
+        if (cancelled.current) return;
+        showToast("Couldn't reach providers — check the connection");
+        navigate("home");
+      }
     };
     run();
     return () => {
       cancelled.current = true;
     };
-  }, [navigate, setStatus]); // Removed `steps` from dependencies as it's a stable ref value
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const togglePause = () => {
     pausedRef.current = !pausedRef.current;
@@ -85,24 +108,17 @@ export function AgentTask({ navigate }: AgentTaskProps) {
           <dl className="mt-3 flex flex-col gap-1.5 font-mono text-[13px] text-on-surface-variant">
             <div className="flex justify-between gap-3">
               <dt>Location</dt>
-              <dd className="text-right text-on-surface">Gulberg, Lahore</dd>
+              <dd className="text-right text-on-surface">{request?.city}</dd>
             </div>
             <div className="flex justify-between gap-3">
-              <dt>Pickup</dt>
-              <dd className="text-right text-on-surface">
-                {request?.pickupDay} · {request?.pickupTime}
-              </dd>
+              <dt>Category</dt>
+              <dd className="text-right capitalize text-on-surface">{request?.category}</dd>
             </div>
             <div className="flex justify-between gap-3">
-              <dt>Budget</dt>
-              <dd className="text-right text-on-surface">≤ {request?.budget.toLocaleString()} PKR</dd>
+              <dt>Quantity</dt>
+              <dd className="text-right text-on-surface">{request?.quantity}</dd>
             </div>
           </dl>
-          {permissions.negotiate && (
-            <p className="mt-3 border-t border-deep-slate/10 pt-3 font-mono text-[11px] text-on-surface-variant">
-              Negotiating within your {permissions.negotiateMax.toLocaleString()} PKR limit
-            </p>
-          )}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -123,7 +139,7 @@ export function AgentTask({ navigate }: AgentTaskProps) {
                   {done ? <Check className="size-3.5" strokeWidth={3} /> : active ? <span className="size-1.5 rounded-full bg-secondary" /> : null}
                 </span>
                 <span className={`text-[15px] ${done || active ? "text-on-surface" : "text-on-surface-variant/50"}`}>
-                  {step.label}
+                  {step.title}
                 </span>
                 {active && <TypingDots className="ml-1" />}
               </div>

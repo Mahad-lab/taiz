@@ -11,11 +11,11 @@ import { Logo } from "@/components/shared/Logo";
 import { customerTabHandler } from "@/lib/nav";
 import { STATUS_ROUTE, type Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
-import type { RequestStatus } from "@/state/types";
+import type { Category, RequestStatus } from "@/state/types";
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
   searching: "Searching",
-  negotiating: "Negotiating",
+  comparing: "Comparing",
   review: "Ready to review",
   confirmed: "Confirmed",
   declined: "Declined",
@@ -37,15 +37,25 @@ interface HomeProps {
 export function Home({ navigate }: HomeProps) {
   const { request, startRequest, showToast } = useApp();
   const [text, setText] = useState("");
+  const [category, setCategory] = useState<Category>("bakery");
+  const [city, setCity] = useState("Karachi");
 
   const launch = () => {
-    startRequest();
+    if (!text.trim()) {
+      showToast("Tell Taiz what you're looking for");
+      return;
+    }
+    startRequest({
+      item: text.trim(),
+      quantity: 1,
+      city: city.trim() || "Karachi",
+      category,
+    });
     navigate("agent-task");
   };
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
     launch();
   };
 
@@ -82,6 +92,37 @@ export function Home({ navigate }: HomeProps) {
           onVoice={() => showToast("Voice input — coming soon")}
         />
 
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">Category</label>
+            <div className="mt-1.5 flex gap-2">
+              {(["bakery", "restaurant"] as Category[]).map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCategory(c)}
+                  className={`flex-1 rounded-full border px-3.5 py-2 text-[13px] font-medium capitalize transition-colors ${
+                    category === c
+                      ? "border-electric-mint bg-electric-mint/10 text-deep-slate"
+                      : "border-deep-slate/10 bg-white text-on-surface-variant hover:border-electric-mint/50"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">City</label>
+            <input
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              placeholder="Karachi"
+              className="mt-1.5 w-full rounded-md border border-deep-slate/10 bg-white py-2.5 px-3 text-[15px] text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-electric-mint"
+            />
+          </div>
+        </div>
+
         <section className="flex flex-col gap-2">
           <h2 className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">Try asking</h2>
           <div className="flex flex-wrap gap-2">
@@ -106,7 +147,9 @@ export function Home({ navigate }: HomeProps) {
             >
               <div className="min-w-0">
                 <p className="truncate text-[15px] font-semibold text-primary">{activeTask.item}</p>
-                <p className="mt-0.5 font-mono text-xs text-on-surface-variant">{activeTask.provider}</p>
+                <p className="mt-0.5 font-mono text-xs text-on-surface-variant">
+                  {activeTask.chosenReply?.businessId ?? activeTask.city}
+                </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <Badge

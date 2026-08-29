@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { TypingDots } from "@/components/shared/TypingDots";
-import { buildAgentChat, sleep, type AgentChatLine } from "@/lib/agent";
+import { buildComparisonChat, sleep, type AgentChatLine } from "@/lib/agent";
 import { cn } from "@/lib/utils";
 import type { Route } from "@/lib/router";
+import { useApp } from "@/state/AppContext";
 
 interface AgentChatLogProps {
   navigate: (route: Route) => void;
@@ -14,9 +15,11 @@ interface AgentChatLogProps {
 
 const REVEAL_MS = 700;
 
-/** Human-readable transcript of the agent-to-agent negotiation. */
+/** Human-readable log of the availability comparison (replaces the negotiation transcript). */
 export function AgentChatLog({ navigate }: AgentChatLogProps) {
-  const lines = useRef(buildAgentChat()).current;
+  const { request } = useApp();
+  const comparison = request?.comparison;
+  const lines = useRef(comparison ? buildComparisonChat(comparison, request?.city ?? "") : []).current;
   const [visible, setVisible] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,8 +49,8 @@ export function AgentChatLog({ navigate }: AgentChatLogProps) {
         onBack={() => navigate("agent-activity")}
         title={
           <div>
-            <h1 className="text-[17px] font-semibold leading-5 text-primary">Agent activity</h1>
-            <p className="font-mono text-[11px] text-on-surface-variant">Your Agent ↔ Provider Agent</p>
+            <h1 className="text-[17px] font-semibold leading-5 text-primary">Comparison log</h1>
+            <p className="font-mono text-[11px] text-on-surface-variant">Your Agent ↔ Provider Agents</p>
           </div>
         }
       />
@@ -55,7 +58,7 @@ export function AgentChatLog({ navigate }: AgentChatLogProps) {
       <main ref={scrollRef} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
         <div className="flex justify-center">
           <span className="rounded-sm border border-outline-variant/20 bg-surface-container-lowest px-2 py-1 font-mono text-[11px] text-on-surface-variant">
-            Negotiating on your behalf — no input needed
+            Comparing fixed prices — no haggling
           </span>
         </div>
 
@@ -66,8 +69,12 @@ export function AgentChatLog({ navigate }: AgentChatLogProps) {
         {visible < lines.length && (
           <div className="flex items-center gap-1.5 pl-1 font-mono text-[11px] text-on-surface-variant/70">
             <TypingDots />
-            agents negotiating
+            agents responding
           </div>
+        )}
+
+        {lines.length === 0 && (
+          <p className="text-center font-mono text-[12px] text-on-surface-variant">No comparison yet.</p>
         )}
       </main>
     </DeviceFrame>

@@ -38,7 +38,7 @@ const ROUTE_ORDER: Route[] = [
 /** Where a request at a given status should be resumed from. */
 export const STATUS_ROUTE: Partial<Record<RequestStatus, Route>> = {
   searching: "agent-task",
-  negotiating: "agent-activity",
+  comparing: "agent-activity",
   review: "review",
   confirmed: "confirmed",
 };

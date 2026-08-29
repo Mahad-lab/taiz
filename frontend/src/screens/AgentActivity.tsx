@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { Timeline } from "@/components/shared/Timeline";
-import { TIMINGS, buildTimeline, sleep, type TimelineStep } from "@/lib/agent";
+import { buildComparisonTimeline, sleep, TIMINGS, type TimelineStep } from "@/lib/agent";
 import { customerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
@@ -15,11 +15,18 @@ interface AgentActivityProps {
 }
 
 export function AgentActivity({ navigate }: AgentActivityProps) {
-  const { setStatus, showToast } = useApp();
-  const [steps, setSteps] = useState<TimelineStep[]>(() => buildTimeline());
+  const { request, setStatus, showToast } = useApp();
+  const comparison = request?.comparison;
+  const [steps, setSteps] = useState<TimelineStep[]>(() =>
+    comparison ? buildComparisonTimeline(comparison) : [],
+  );
   const cancelled = useRef(false);
 
   useEffect(() => {
+    if (!comparison) {
+      navigate("agent-task");
+      return;
+    }
     cancelled.current = false;
     const run = async () => {
       await sleep(TIMINGS.timelineStep);
@@ -27,7 +34,7 @@ export function AgentActivity({ navigate }: AgentActivityProps) {
       setSteps(prev =>
         prev.map(step =>
           step.status === "active"
-            ? { ...step, status: "done", title: "Best offer identified", detail: "Ready for your review.", time: "NOW" }
+            ? { ...step, status: "done", detail: "Cheapest available shown first.", time: "NOW" }
             : step,
         ),
       );
@@ -40,7 +47,8 @@ export function AgentActivity({ navigate }: AgentActivityProps) {
     return () => {
       cancelled.current = true;
     };
-  }, [navigate, setStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onTab = customerTabHandler(navigate, showToast);
 
@@ -51,7 +59,7 @@ export function AgentActivity({ navigate }: AgentActivityProps) {
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-24 pt-2">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-primary">Agent activity</h1>
-          <p className="mt-1 text-[15px] text-on-surface-variant">Working on your request...</p>
+          <p className="mt-1 text-[15px] text-on-surface-variant">Comparing fixed prices...</p>
         </div>
 
         <div className="relative mb-6 flex h-32 items-center justify-center">
@@ -69,7 +77,7 @@ export function AgentActivity({ navigate }: AgentActivityProps) {
           onClick={() => navigate("agent-chat-log")}
           className="mt-5 w-full rounded-lg bg-primary-container px-4 py-3 font-mono text-[13px] font-medium text-on-primary transition-opacity hover:opacity-90"
         >
-          View agent activity
+          View comparison log
         </button>
       </main>
 

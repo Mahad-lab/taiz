@@ -1,32 +1,23 @@
 import { serve } from "bun";
 import index from "./index.html";
 
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
+
 const server = serve({
   routes: {
-    // Serve index.html for all unmatched routes.
-    "/*": index,
-
-    "/api/hello": {
-      async GET(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "GET",
-        });
-      },
-      async PUT(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "PUT",
-        });
-      },
-    },
-
-    "/api/hello/:name": async req => {
-      const name = req.params.name;
-      return Response.json({
-        message: `Hello, ${name}!`,
+    // Proxy API calls to the Taiz backend (single origin, no CORS).
+    "/api/*": async (req) => {
+      const url = new URL(req.url);
+      const target = `${BACKEND_URL}${url.pathname.replace(/^\/api/, "")}${url.search}`;
+      return fetch(target, {
+        method: req.method,
+        headers: req.headers,
+        body: req.method === "GET" || req.method === "HEAD" ? undefined : req.body,
       });
     },
+
+    // Serve index.html for all unmatched routes.
+    "/*": index,
   },
 
   development: process.env.NODE_ENV !== "production" && {
@@ -38,4 +29,4 @@ const server = serve({
   },
 });
 
-console.log(`🚀 Server running at ${server.url}`);
+console.log(`🚀 Server running at ${server.url} (proxying /api → ${BACKEND_URL})`);

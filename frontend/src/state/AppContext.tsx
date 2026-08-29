@@ -1,7 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 
+import * as api from "@/lib/api";
+import type { AvailabilityComparison, AvailabilityReply, Order } from "@/lib/api";
 import { DEMO, nextId } from "@/lib/agent";
-import type { Permissions, ProviderJob, RequestStatus, Role, TaizRequest, Toast } from "./types";
+import type { Category, Permissions, ProviderJob, RequestStatus, Role, TaizRequest, Toast } from "./types";
+
+export interface StartRequestInput {
+  item: string;
+  quantity: number;
+  city: string;
+  category: Category;
+  neighborhood?: string;
+}
 
 interface AppState {
   role: Role | null;
@@ -9,57 +19,27 @@ interface AppState {
   jobs: ProviderJob[];
   agentActive: boolean;
   permissions: Permissions;
+  businessId: string | null;
   toast: Toast | null;
 }
 
-type PersistedState = Pick<AppState, "role" | "request" | "jobs" | "agentActive" | "permissions">;
+type PersistedState = Pick<AppState, "role" | "request" | "agentActive" | "permissions" | "businessId">;
 
 type Action =
   | { type: "SET_ROLE"; role: Role }
-  | { type: "START_REQUEST" }
+  | { type: "START_REQUEST"; input: StartRequestInput }
+  | { type: "SET_COMPARISON"; comparison: AvailabilityComparison }
+  | { type: "CHOOSE_REPLY"; reply: AvailabilityReply }
+  | { type: "SET_ORDER"; order: Order }
   | { type: "SET_STATUS"; status: RequestStatus }
-  | { type: "CONFIRM_ORDER" }
-  | { type: "DECLINE_ORDER" }
-  | { type: "ACCEPT_JOB"; id: string }
+  | { type: "SET_BUSINESS"; businessId: string }
+  | { type: "SET_PROVIDER_ORDERS"; jobs: ProviderJob[] }
   | { type: "TOGGLE_AGENT" }
   | { type: "SET_PERMISSION"; permissions: Partial<Permissions> }
   | { type: "HYDRATE"; payload: PersistedState }
   | { type: "RESET" }
   | { type: "SHOW_TOAST"; message: string }
   | { type: "CLEAR_TOAST" };
-
-const INITIAL_JOBS: ProviderJob[] = [
-  {
-    id: "job-sarah",
-    customer: "Sarah Jenkins",
-    item: "Vanilla Birthday Cake",
-    day: "Today",
-    time: "2:30 PM",
-    price: 3500,
-    location: "Gulberg, Lahore",
-    status: "confirmed",
-  },
-  {
-    id: "job-marcus",
-    customer: "Marcus Thorne",
-    item: "Chocolate Truffle",
-    day: "Tomorrow",
-    time: "9:00 AM",
-    price: 2900,
-    location: "DHA Phase 5",
-    status: "confirmed",
-  },
-  {
-    id: "job-elena",
-    customer: "Elena Rodriguez",
-    item: "Custom Wedding Cake",
-    day: "Thu",
-    time: "4:15 PM",
-    price: 8500,
-    location: "Model Town",
-    status: "pending",
-  },
-];
 
 const INITIAL_PERMISSIONS: Permissions = {
   communicate: true,
@@ -71,21 +51,38 @@ const INITIAL_PERMISSIONS: Permissions = {
 
 const STORAGE_KEY = "taiz:state";
 
-/** localStorage (not sessionStorage) so the provider side in another tab/window sees cross-tab updates. */
+function mapOrderToJob(order: Order, businessName: string): ProviderJob {
+  const item = order.lines.map(l => l.name).join(", ");
+  const firstEta = order.lines.find(l => l.etaMinutes)?.etaMinutes;
+  const d = new Date(order.createdAt);
+  return {
+    id: order.id,
+    customer: order.personalAgentId,
+    item,
+    price: order.total,
+    etaMinutes: firstEta,
+    day: d.toLocaleDateString([], { weekday: "short" }),
+    time: d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+    location: businessName,
+    businessId: order.businessId,
+    status: order.status === "confirmed" ? "confirmed" : "pending",
+  };
+}
+
 function loadPersisted(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true, permissions: INITIAL_PERMISSIONS };
+    if (!raw) return { role: null, request: null, agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
     const parsed = JSON.parse(raw) as Partial<AppState>;
     return {
       role: parsed.role ?? null,
       request: isRequest(parsed.request) ? parsed.request : null,
-      jobs: parsed.jobs?.length ? parsed.jobs : INITIAL_JOBS,
       agentActive: parsed.agentActive ?? true,
       permissions: { ...INITIAL_PERMISSIONS, ...parsed.permissions },
+      businessId: parsed.businessId ?? null,
     };
   } catch {
-    return { role: null, request: null, jobs: INITIAL_JOBS, agentActive: true, permissions: INITIAL_PERMISSIONS };
+    return { role: null, request: null, agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
   }
 }
 
@@ -95,30 +92,22 @@ function isRequest(value: unknown): value is TaizRequest {
   return (
     typeof req.id === "string" &&
     typeof req.item === "string" &&
-    typeof req.budget === "number" &&
-    typeof req.provider === "string" &&
-    typeof req.providerRating === "number" &&
-    typeof req.initialPrice === "number" &&
-    typeof req.finalPrice === "number" &&
-    typeof req.pickupLocation === "string" &&
-    typeof req.pickupDay === "string" &&
-    typeof req.pickupTime === "string" &&
-    typeof req.status === "string"
+    typeof req.quantity === "number" &&
+    typeof req.city === "string" &&
+    typeof req.category === "string" &&
+    typeof req.status === "string" &&
+    typeof req.createdAt === "string"
   );
 }
 
-function makeRequest(): TaizRequest {
+function makeRequest(input: StartRequestInput): TaizRequest {
   return {
     id: nextId("req"),
-    item: DEMO.item,
-    budget: DEMO.budget,
-    provider: DEMO.provider,
-    providerRating: DEMO.providerRating,
-    initialPrice: DEMO.initialPrice,
-    finalPrice: DEMO.finalPrice,
-    pickupLocation: DEMO.pickupLocation,
-    pickupDay: DEMO.pickupDay,
-    pickupTime: DEMO.pickupTime,
+    item: input.item,
+    quantity: input.quantity,
+    city: input.city,
+    category: input.category,
+    neighborhood: input.neighborhood,
     status: "searching",
     createdAt: new Date().toISOString(),
   };
@@ -129,38 +118,39 @@ function reducer(state: AppState, action: Action): AppState {
     case "SET_ROLE":
       return { ...state, role: action.role };
     case "START_REQUEST":
-      return { ...state, request: makeRequest() };
+      return { ...state, request: makeRequest(action.input) };
+    case "SET_COMPARISON":
+      return {
+        ...state,
+        request: state.request ? { ...state.request, comparison: action.comparison, status: "comparing" } : null,
+      };
+    case "CHOOSE_REPLY":
+      return {
+        ...state,
+        request: state.request ? { ...state.request, chosenReply: action.reply } : null,
+      };
+    case "SET_ORDER":
+      return {
+        ...state,
+        request: state.request
+          ? {
+              ...state.request,
+              orderId: action.order.id,
+              status:
+                action.order.status === "confirmed"
+                  ? "confirmed"
+                  : action.order.status === "rejected"
+                    ? "declined"
+                    : state.request.status,
+            }
+          : null,
+      };
     case "SET_STATUS":
-      if (!state.request) return state;
-      return { ...state, request: { ...state.request, status: action.status } };
-    case "CONFIRM_ORDER": {
-      if (!state.request) return state;
-      const job: ProviderJob = {
-        id: nextId("job"),
-        customer: DEMO.customer,
-        item: state.request.item,
-        day: state.request.pickupDay,
-        time: state.request.pickupTime,
-        price: state.request.finalPrice,
-        location: state.request.pickupLocation,
-        status: "confirmed",
-      };
-      return {
-        ...state,
-        request: { ...state.request, status: "confirmed" },
-        jobs: [job, ...state.jobs],
-      };
-    }
-    case "DECLINE_ORDER":
-      if (!state.request) return state;
-      return { ...state, request: { ...state.request, status: "declined" } };
-    case "ACCEPT_JOB":
-      return {
-        ...state,
-        jobs: state.jobs.map(job =>
-          job.id === action.id ? { ...job, status: "confirmed" } : job,
-        ),
-      };
+      return { ...state, request: state.request ? { ...state.request, status: action.status } : null };
+    case "SET_BUSINESS":
+      return { ...state, businessId: action.businessId, jobs: [] };
+    case "SET_PROVIDER_ORDERS":
+      return { ...state, jobs: action.jobs };
     case "TOGGLE_AGENT":
       return { ...state, agentActive: !state.agentActive };
     case "SET_PERMISSION":
@@ -168,7 +158,7 @@ function reducer(state: AppState, action: Action): AppState {
     case "HYDRATE":
       return { ...state, ...action.payload };
     case "RESET":
-      return { ...state, role: null, request: null, jobs: INITIAL_JOBS, agentActive: true, permissions: INITIAL_PERMISSIONS };
+      return { ...state, role: null, request: null, jobs: [], agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
     case "SHOW_TOAST":
       return { ...state, toast: { id: Date.now(), message: action.message } };
     case "CLEAR_TOAST":
@@ -179,11 +169,16 @@ function reducer(state: AppState, action: Action): AppState {
 }
 
 interface AppContextValue extends AppState {
-  startRequest: () => void;
+  startRequest: (input: StartRequestInput) => void;
+  setComparison: (comparison: AvailabilityComparison) => void;
+  chooseReply: (reply: AvailabilityReply) => void;
   setStatus: (status: RequestStatus) => void;
-  confirmOrder: () => void;
-  declineOrder: () => void;
-  acceptJob: (id: string) => void;
+  createOrderForReview: (reply: AvailabilityReply, quantity: number) => Promise<void>;
+  confirmOrder: () => Promise<void>;
+  declineOrder: () => Promise<void>;
+  setBusiness: (businessId: string) => void;
+  refreshProviderOrders: () => Promise<void>;
+  acceptJob: (id: string) => Promise<void>;
   setRole: (role: Role) => void;
   toggleAgent: () => void;
   setPermission: (permissions: Partial<Permissions>) => void;
@@ -197,16 +192,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const persisted = useMemo(loadPersisted, []);
   const [state, dispatch] = useReducer(reducer, {
     ...persisted,
+    jobs: [],
     toast: null,
   });
 
   useEffect(() => {
-    const { role, request, jobs, agentActive, permissions } = state;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ role, request, jobs, agentActive, permissions }),
-    );
-  }, [state.role, state.request, state.jobs, state.agentActive, state.permissions]);
+    const { role, request, agentActive, permissions, businessId } = state;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ role, request, agentActive, permissions, businessId }));
+  }, [state.role, state.request, state.agentActive, state.permissions, state.businessId]);
 
   useEffect(() => {
     if (!state.toast) return;
@@ -214,7 +207,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t);
   }, [state.toast]);
 
-  // Live cross-tab sync: apply writes made in other tabs/windows.
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return;
@@ -224,18 +216,86 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  const startRequest = useCallback((input: StartRequestInput) => dispatch({ type: "START_REQUEST", input }), []);
+  const setComparison = useCallback((comparison: AvailabilityComparison) => dispatch({ type: "SET_COMPARISON", comparison }), []);
+  const chooseReply = useCallback((reply: AvailabilityReply) => dispatch({ type: "CHOOSE_REPLY", reply }), []);
+  const setStatus = useCallback((status: RequestStatus) => dispatch({ type: "SET_STATUS", status }), []);
+  const setBusiness = useCallback((businessId: string) => dispatch({ type: "SET_BUSINESS", businessId }), []);
+  const setRole = useCallback((role: Role) => dispatch({ type: "SET_ROLE", role }), []);
+  const toggleAgent = useCallback(() => dispatch({ type: "TOGGLE_AGENT" }), []);
+  const setPermission = useCallback((permissions: Partial<Permissions>) => dispatch({ type: "SET_PERMISSION", permissions }), []);
+  const reset = useCallback(() => dispatch({ type: "RESET" }), []);
+  const showToast = useCallback((message: string) => dispatch({ type: "SHOW_TOAST", message }), []);
+
+  const createOrderForReview = useCallback(async (reply: AvailabilityReply, quantity: number) => {
+    if (!reply.product) return;
+    const order = await api.createOrder({
+      personalAgentId: api.PERSONAL_AGENT_ID,
+      businessId: reply.businessId,
+      items: [{ productId: reply.product.id, quantity }],
+    });
+    dispatch({ type: "SET_ORDER", order });
+  }, []);
+
+  const confirmOrder = useCallback(async () => {
+    const id = state.request?.orderId;
+    if (!id) return;
+    const approved = await api.approveOrder(id);
+    const confirmed = await api.confirmOrder(approved.id);
+    dispatch({ type: "SET_ORDER", order: confirmed });
+  }, [state.request]);
+
+  const declineOrder = useCallback(async () => {
+    const id = state.request?.orderId;
+    if (!id) return;
+    const rejected = await api.rejectOrder(id);
+    dispatch({ type: "SET_ORDER", order: rejected });
+  }, [state.request]);
+
+  const refreshProviderOrders = useCallback(async () => {
+    if (!state.businessId) return;
+    try {
+      const [orders, businesses] = await Promise.all([
+        api.listOrders(state.businessId),
+        api.listBusinesses(),
+      ]);
+      const nameById = new Map(businesses.map(b => [b.id, b.name]));
+      dispatch({
+        type: "SET_PROVIDER_ORDERS",
+        jobs: orders.map(o => mapOrderToJob(o, nameById.get(o.businessId) ?? o.businessId)),
+      });
+    } catch {
+      /* leave existing jobs */
+    }
+  }, [state.businessId]);
+
+  const acceptJob = useCallback(
+    async (id: string) => {
+      const approved = await api.approveOrder(id);
+      const confirmed = await api.confirmOrder(approved.id);
+      dispatch({ type: "SET_PROVIDER_ORDERS", jobs: state.jobs.map(j => (j.id === id ? { ...j, status: "confirmed" } : j)) });
+      void confirmed;
+    },
+    [state.jobs],
+  );
+
   const value: AppContextValue = {
     ...state,
-    startRequest: useCallback(() => dispatch({ type: "START_REQUEST" }), []),
-    setStatus: useCallback((status: RequestStatus) => dispatch({ type: "SET_STATUS", status }), []),
-    confirmOrder: useCallback(() => dispatch({ type: "CONFIRM_ORDER" }), []),
-    declineOrder: useCallback(() => dispatch({ type: "DECLINE_ORDER" }), []),
-    acceptJob: useCallback((id: string) => dispatch({ type: "ACCEPT_JOB", id }), []),
-    setRole: useCallback((role: Role) => dispatch({ type: "SET_ROLE", role }), []),
-    toggleAgent: useCallback(() => dispatch({ type: "TOGGLE_AGENT" }), []),
-    setPermission: useCallback((permissions: Partial<Permissions>) => dispatch({ type: "SET_PERMISSION", permissions }), []),
-    reset: useCallback(() => dispatch({ type: "RESET" }), []),
-    showToast: useCallback((message: string) => dispatch({ type: "SHOW_TOAST", message }), []),
+    startRequest,
+    setComparison,
+    chooseReply,
+    setStatus,
+    createOrderForReview,
+    confirmOrder,
+    declineOrder,
+    setBusiness,
+    refreshProviderOrders,
+    acceptJob,
+    setRole,
+    toggleAgent,
+    setPermission,
+    reset,
+    showToast,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

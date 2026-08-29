@@ -7,6 +7,7 @@ import type { BusinessAgentHandle } from "../core/agent/businessAgent";
 import type { PersonalAgent } from "../core/agent/types";
 import { errorHandler } from "./middleware/errorHandler";
 import { auth } from "./middleware/auth";
+import { requestLogger } from "./middleware/requestLogger";
 import { ok } from "./lib/response";
 import { agentsRoutes } from "./routes/agents";
 import { businessesRoutes } from "./routes/businesses";
@@ -27,6 +28,7 @@ export interface AppDeps {
 export function createApp(deps: AppDeps): Hono {
   const app = new Hono();
   app.onError(errorHandler);
+  app.use("*", requestLogger);
   app.use("*", auth);
 
   app.get("/", (c) => ok(c, { name: "taiz-backend", status: "running" }));

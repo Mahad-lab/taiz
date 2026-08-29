@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface ToggleProps {
@@ -9,9 +10,18 @@ interface ToggleProps {
 }
 
 /** Branded switch toggle (Deep Slate / Electric Mint).
- *  Implemented as a controlled `role="switch"` button so a single tap/click
- *  produces exactly one `onChange`, working consistently on touch and mouse. */
+ *  Implemented as a controlled `role="switch"` button. A short activation
+ *  guard coalesces accidental duplicate events (touch + synthetic click, or a
+ *  stray second tap) so a single intent toggles exactly once on touch & mouse. */
 export function Toggle({ checked, onChange, className, label, disabled }: ToggleProps) {
+  const lastActivation = useRef(0);
+  const handleClick = () => {
+    const now = Date.now();
+    if (now - lastActivation.current < 250) return;
+    lastActivation.current = now;
+    onChange(!checked);
+  };
+
   return (
     <button
       type="button"
@@ -19,7 +29,7 @@ export function Toggle({ checked, onChange, className, label, disabled }: Toggle
       aria-checked={checked}
       aria-label={label}
       disabled={disabled}
-      onClick={() => onChange(!checked)}
+      onClick={handleClick}
       className={cn(
         "relative h-8 w-14 shrink-0 rounded-full border outline-none transition-colors duration-300",
         checked

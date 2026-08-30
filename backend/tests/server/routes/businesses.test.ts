@@ -7,14 +7,14 @@ describe("GET /businesses", () => {
     const res = await app.request("/businesses");
     expect(res.status).toBe(200);
     const json: any = await readJson(res);
-    expect(json.data.businesses).toHaveLength(3);
+    expect(json.data.businesses).toHaveLength(8);
   });
 
   test("filters by city + category", async () => {
     const { app } = buildTestApp();
     const res = await app.request("/businesses?city=Karachi&category=bakery");
     const json: any = await readJson(res);
-    expect(json.data.businesses.map((b: { id: string }) => b.id).sort()).toEqual(["biz-oven", "biz-sunrise"]);
+    expect(json.data.businesses.map((b: { id: string }) => b.id).sort()).toEqual(["biz-crust", "biz-dough", "biz-herb", "biz-olive", "biz-oven", "biz-sunrise"]);
   });
 
   test("rejects an unknown category", async () => {

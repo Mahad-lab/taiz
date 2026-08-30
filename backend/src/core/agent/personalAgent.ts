@@ -41,8 +41,8 @@ export async function compareAvailability(
     if (!client) return null;
     return client.checkAvailability({ item: req.item, quantity: req.quantity });
   });
-  const settled = await Promise.all(pending);
-  const replies = settled.filter((r): r is AvailabilityReply => r !== null);
+  const settled = await Promise.allSettled(pending);
+  const replies = settled.filter((r): r is AvailabilityReply => r.status === "fulfilled" && r.value !== null).map(r => r.value);
   return { item: req.item, quantity: req.quantity, replies: sortReplies(replies) };
 }
 

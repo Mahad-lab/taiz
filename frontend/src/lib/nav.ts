@@ -16,7 +16,7 @@ export function customerTabRoute(tab: NavTabId): Route | null {
 
 const PROVIDER_TAB_ROUTES: Partial<Record<NavTabId, Route>> = {
   jobs: "provider",
-  negotiations: "provider-negotiation",
+  requests: "provider",
   explore: "provider-explore",
   profile: "provider-profile",
 };

@@ -4,7 +4,6 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { PermissionRow } from "@/components/shared/PermissionRow";
-import { DEMO } from "@/lib/agent";
 import { customerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
@@ -21,7 +20,7 @@ const PRIVACY_ITEMS = [
 
 /** Identity, agent permissions, and privacy — "your agent, your terms." */
 export function You({ navigate }: YouProps) {
-  const { permissions, setPermission, reset, showToast } = useApp();
+  const { user, permissions, setPermission, reset, showToast } = useApp();
   const onTab = customerTabHandler(navigate, showToast);
 
   return (
@@ -31,11 +30,11 @@ export function You({ navigate }: YouProps) {
       <main className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-24 pt-4">
         <section className="flex items-center gap-4 rounded-lg border border-deep-slate/10 bg-white p-4">
           <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-secondary-container text-lg font-bold text-on-secondary-container">
-            AK
+            {user?.name?.charAt(0) || "U"}
           </span>
           <div className="min-w-0">
-            <h2 className="text-[18px] font-bold text-primary">{DEMO.customer}</h2>
-            <p className="mt-0.5 font-mono text-[12px] text-on-surface-variant">Gulberg, Lahore</p>
+            <h2 className="text-[18px] font-bold text-primary">{user?.name || "User"}</h2>
+            <p className="mt-0.5 font-mono text-[12px] text-on-surface-variant">{user?.location || "Select a location"}</p>
           </div>
         </section>
 

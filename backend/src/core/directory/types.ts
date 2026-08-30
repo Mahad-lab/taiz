@@ -6,9 +6,14 @@ export interface BusinessListing {
   category: BusinessType;
   city: string;
   neighborhood: string;
+  lat: number;
+  lng: number;
 }
 
 export interface AreaQuery {
   city: string;
   neighborhood?: string;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }

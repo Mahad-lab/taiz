@@ -9,7 +9,6 @@ import { Home } from "@/screens/Home";
 import { OrderConfirmation } from "@/screens/OrderConfirmation";
 import { ProviderDashboard } from "@/screens/ProviderDashboard";
 import { ProviderExplore } from "@/screens/ProviderExplore";
-import { ProviderNegotiation } from "@/screens/ProviderNegotiation";
 import { ProviderProfile } from "@/screens/ProviderProfile";
 import { Results } from "@/screens/Results";
 import { Welcome } from "@/screens/Welcome";
@@ -40,8 +39,6 @@ function Router() {
       return <OrderConfirmation navigate={navigate} />;
     case "provider":
       return <ProviderDashboard navigate={navigate} />;
-    case "provider-negotiation":
-      return <ProviderNegotiation navigate={navigate} />;
     case "provider-explore":
       return <ProviderExplore navigate={navigate} />;
     case "provider-profile":

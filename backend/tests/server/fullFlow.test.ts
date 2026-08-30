@@ -23,14 +23,14 @@ describe("full flow", () => {
     const askedBody: any = await readJson(asked);
     const { comparison, summary } = askedBody.data;
 
-    // 2. Fanned out to exactly 2 bakery agents; cheapest listed price first
-    expect(comparison.replies).toHaveLength(2);
+    // 2. Fanned out to all Karachi bakery agents; cheapest listed price first
+    expect(comparison.replies).toHaveLength(6);
     const best = comparison.replies[0];
     expect(best).toMatchObject({
-      businessId: "biz-sunrise",
+      businessId: "biz-crust",
       status: "available",
-      price: 350,
-      product: { id: "p-1", name: "Croissant" },
+      price: 300,
+      product: { id: "p-6", name: "Croissant" },
     });
     expect(summary).toStartWith("[fake]");
 
@@ -44,7 +44,7 @@ describe("full flow", () => {
     const orderBody: any = await readJson(ordered);
     const order = orderBody.data.order;
     expect(order.status).toBe("pending_approval");
-    expect(order.total).toBe(2100);
+    expect(order.total).toBe(1800);
 
     // 4. Blocked: cannot confirm without human approval
     const earlyConfirm = await app.request(`/orders/${order.id}/confirm`, { method: "POST" });

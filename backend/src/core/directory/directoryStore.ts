@@ -13,14 +13,22 @@ export function createDirectoryStore(): DirectoryStore {
 
   const listAll = (): BusinessListing[] => [...listings.values()];
 
-  const findByArea = (query: AreaQuery, category?: BusinessType): BusinessListing[] =>
-    listAll().filter(
-      (l) =>
-        l.city.toLowerCase() === query.city.toLowerCase() &&
-        (query.neighborhood === undefined ||
-          l.neighborhood.toLowerCase() === query.neighborhood.toLowerCase()) &&
-        (category === undefined || l.category === category),
-    );
+  const findByArea = (query: AreaQuery, category?: BusinessType): BusinessListing[] => {
+    return listAll().filter((l) => {
+      if (l.city.toLowerCase() !== query.city.toLowerCase()) return false;
+      if (query.neighborhood && l.neighborhood.toLowerCase() !== query.neighborhood.toLowerCase()) return false;
+      if (category !== undefined && l.category !== category) return false;
+      if (query.lat !== undefined && query.lng !== undefined && query.radius !== undefined) {
+        const R = 6371;
+        const dLat = (l.lat - query.lat) * Math.PI / 180;
+        const dLng = (l.lng - query.lng) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(query.lat * Math.PI / 180) * Math.cos(l.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        if (c * R > query.radius) return false;
+      }
+      return true;
+    });
+  };
 
   return {
     findByArea,

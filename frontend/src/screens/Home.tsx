@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<RequestStatus, string> = {
   declined: "Declined",
 };
 
-const SUGGESTIONS = ["Find a nearby bakery", "Book a home repair", "Find a mechanic", "Compare local providers"];
+const SUGGESTIONS = ["Find a nearby bakery", "Compare local providers"];
 
 function greeting() {
   const hour = new Date().getHours();

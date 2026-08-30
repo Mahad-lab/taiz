@@ -87,7 +87,7 @@ describe("GET /orders", () => {
     await postJson(app, "/orders", {
       personalAgentId: "agent-user",
       businessId: "biz-oven",
-      items: [{ productId: "p-4", quantity: 2 }],
+      items: [{ productId: "p-8", quantity: 2 }],
     });
     const res = await app.request("/orders");
     expect((await readJson(res)).data.orders).toHaveLength(2);
@@ -99,7 +99,7 @@ describe("GET /orders", () => {
     await postJson(app, "/orders", {
       personalAgentId: "agent-user",
       businessId: "biz-oven",
-      items: [{ productId: "p-4", quantity: 2 }],
+      items: [{ productId: "p-8", quantity: 2 }],
     });
 
     const sunrise = await app.request("/orders?businessId=biz-sunrise");

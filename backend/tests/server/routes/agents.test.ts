@@ -15,9 +15,10 @@ describe("POST /agents/:id/message", () => {
     expect(json.ok).toBe(true);
 
     const { comparison, summary } = json.data;
-    expect(comparison.replies).toHaveLength(2);
-    expect(comparison.replies[0]).toMatchObject({ businessId: "biz-sunrise", status: "available", price: 350 });
-    expect(comparison.replies[1]).toMatchObject({ businessId: "biz-oven", status: "available", price: 400 });
+    expect(comparison.replies).toHaveLength(6);
+    expect(comparison.replies[0]).toMatchObject({ businessId: "biz-crust", status: "available", price: 300 });
+    expect(comparison.replies[1]).toMatchObject({ businessId: "biz-sunrise", status: "available", price: 350 });
+    expect(comparison.replies.slice(2).every((r: any) => r.status === "unavailable")).toBe(true);
     // fake provider echoed through the router
     expect(summary).toStartWith("[fake]");
     expect(summary).toContain("biz-sunrise");
@@ -25,14 +26,14 @@ describe("POST /agents/:id/message", () => {
 
   test("business agent answers from its own catalog", async () => {
     const { app } = buildTestApp();
-    const res = await postJson(app, "/agents/biz-olive/message", {
+    const res = await postJson(app, "/agents/biz-kitchen/message", {
       item: "Margherita Pizza",
       quantity: 1,
     });
     expect(res.status).toBe(200);
     const json: any = await readJson(res);
     expect(json.data.reply).toMatchObject({
-      businessId: "biz-olive",
+      businessId: "biz-kitchen",
       status: "available",
       price: 2800,
       currency: "PKR",

@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import * as api from "@/lib/api";
 import type { AvailabilityComparison, AvailabilityReply, Order } from "@/lib/api";
 import { DEMO, nextId } from "@/lib/agent";
-import type { Category, Permissions, ProviderJob, RequestStatus, Role, TaizRequest, Toast } from "./types";
+import type { Category, Permissions, ProviderJob, RequestStatus, TaizRequest, Toast, User } from "./types";
 
 export interface StartRequestInput {
   item: string;
@@ -14,7 +14,7 @@ export interface StartRequestInput {
 }
 
 interface AppState {
-  role: Role | null;
+  user: User | null;
   request: TaizRequest | null;
   jobs: ProviderJob[];
   agentActive: boolean;
@@ -23,10 +23,11 @@ interface AppState {
   toast: Toast | null;
 }
 
-type PersistedState = Pick<AppState, "role" | "request" | "agentActive" | "permissions" | "businessId">;
+type PersistedState = Pick<AppState, "user" | "request" | "agentActive" | "permissions" | "businessId">;
 
 type Action =
-  | { type: "SET_ROLE"; role: Role }
+  | { type: "LOGIN"; payload: { user: User } }
+  | { type: "LOGOUT" }
   | { type: "START_REQUEST"; input: StartRequestInput }
   | { type: "SET_COMPARISON"; comparison: AvailabilityComparison }
   | { type: "CHOOSE_REPLY"; reply: AvailabilityReply }
@@ -35,6 +36,7 @@ type Action =
   | { type: "SET_BUSINESS"; businessId: string }
   | { type: "SET_PROVIDER_ORDERS"; jobs: ProviderJob[] }
   | { type: "TOGGLE_AGENT" }
+  | { type: "SET_AGENT"; value: boolean }
   | { type: "SET_PERMISSION"; permissions: Partial<Permissions> }
   | { type: "HYDRATE"; payload: PersistedState }
   | { type: "RESET" }
@@ -72,17 +74,17 @@ function mapOrderToJob(order: Order, businessName: string): ProviderJob {
 function loadPersisted(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { role: null, request: null, agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
+    if (!raw) return { user: null, request: null, agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
     const parsed = JSON.parse(raw) as Partial<AppState>;
     return {
-      role: parsed.role ?? null,
+      user: parsed.user ?? null,
       request: isRequest(parsed.request) ? parsed.request : null,
       agentActive: parsed.agentActive ?? true,
       permissions: { ...INITIAL_PERMISSIONS, ...parsed.permissions },
       businessId: parsed.businessId ?? null,
     };
   } catch {
-    return { role: null, request: null, agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
+    return { user: null, request: null, agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
   }
 }
 
@@ -115,8 +117,10 @@ function makeRequest(input: StartRequestInput): TaizRequest {
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case "SET_ROLE":
-      return { ...state, role: action.role };
+    case "LOGIN":
+      return { ...state, user: action.payload.user, businessId: action.payload.user.businessId ?? null };
+    case "LOGOUT":
+      return { ...state, user: null, businessId: null, request: null, jobs: [] };
     case "START_REQUEST":
       return { ...state, request: makeRequest(action.input) };
     case "SET_COMPARISON":
@@ -153,12 +157,14 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, jobs: action.jobs };
     case "TOGGLE_AGENT":
       return { ...state, agentActive: !state.agentActive };
+    case "SET_AGENT":
+      return state.agentActive === action.value ? state : { ...state, agentActive: action.value };
     case "SET_PERMISSION":
       return { ...state, permissions: { ...state.permissions, ...action.permissions } };
     case "HYDRATE":
       return { ...state, ...action.payload };
     case "RESET":
-      return { ...state, role: null, request: null, jobs: [], agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
+      return { user: null, request: null, jobs: [], agentActive: true, permissions: INITIAL_PERMISSIONS, businessId: null };
     case "SHOW_TOAST":
       return { ...state, toast: { id: Date.now(), message: action.message } };
     case "CLEAR_TOAST":
@@ -179,8 +185,9 @@ interface AppContextValue extends AppState {
   setBusiness: (businessId: string) => void;
   refreshProviderOrders: () => Promise<void>;
   acceptJob: (id: string) => Promise<void>;
-  setRole: (role: Role) => void;
-  toggleAgent: () => void;
+  login: (user: User) => void;
+  logout: () => void;
+  toggleAgent: (value: boolean) => void;
   setPermission: (permissions: Partial<Permissions>) => void;
   reset: () => void;
   showToast: (message: string) => void;
@@ -197,9 +204,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const { role, request, agentActive, permissions, businessId } = state;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ role, request, agentActive, permissions, businessId }));
-  }, [state.role, state.request, state.agentActive, state.permissions, state.businessId]);
+    const { user, request, agentActive, permissions, businessId } = state;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, request, agentActive, permissions, businessId }));
+  }, [state.user, state.request, state.agentActive, state.permissions, state.businessId]);
 
   useEffect(() => {
     if (!state.toast) return;
@@ -221,11 +228,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const chooseReply = useCallback((reply: AvailabilityReply) => dispatch({ type: "CHOOSE_REPLY", reply }), []);
   const setStatus = useCallback((status: RequestStatus) => dispatch({ type: "SET_STATUS", status }), []);
   const setBusiness = useCallback((businessId: string) => dispatch({ type: "SET_BUSINESS", businessId }), []);
-  const setRole = useCallback((role: Role) => dispatch({ type: "SET_ROLE", role }), []);
-  const toggleAgent = useCallback(() => dispatch({ type: "TOGGLE_AGENT" }), []);
+  const toggleAgent = useCallback((value: boolean) => dispatch({ type: "SET_AGENT", value }), []);
   const setPermission = useCallback((permissions: Partial<Permissions>) => dispatch({ type: "SET_PERMISSION", permissions }), []);
   const reset = useCallback(() => dispatch({ type: "RESET" }), []);
   const showToast = useCallback((message: string) => dispatch({ type: "SHOW_TOAST", message }), []);
+
+  const login = useCallback((user: User) => dispatch({ type: "LOGIN", payload: { user } }), []);
+  const logout = useCallback(() => dispatch({ type: "LOGOUT" }), []);
 
   const createOrderForReview = useCallback(async (reply: AvailabilityReply, quantity: number) => {
     if (!reply.product) return;
@@ -291,7 +300,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBusiness,
     refreshProviderOrders,
     acceptJob,
-    setRole,
+    login,
+    logout,
     toggleAgent,
     setPermission,
     reset,
@@ -303,6 +313,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export function useApp() {
   const ctx = useContext(AppContext);
-  if (!ctx) throw new Error("useApp must be used within AppProvider");
+  if (!ctx) throw new Error("useApp must be within AppProvider");
   return ctx;
 }

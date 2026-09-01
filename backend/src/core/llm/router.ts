@@ -13,11 +13,12 @@ export type ProviderRegistry = Record<string, Provider>;
  */
 export function createProviderRegistry(apiKeys: {
   openai?: string;
+  openaiBaseUrl?: string;
   anthropic?: string;
   qwen?: string;
 }): ProviderRegistry {
   const registry: ProviderRegistry = {};
-  if (apiKeys.openai) registry.openai = createOpenAIProvider(apiKeys.openai);
+  if (apiKeys.openai) registry.openai = createOpenAIProvider(apiKeys.openai, apiKeys.openaiBaseUrl);
   // TODO: if (apiKeys.anthropic) registry.anthropic = createAnthropicProvider(apiKeys.anthropic)
   // TODO: if (apiKeys.qwen) registry.qwen = createQwenProvider(apiKeys.qwen)
   return registry;

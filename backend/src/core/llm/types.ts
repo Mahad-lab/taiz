@@ -18,6 +18,12 @@ export interface LLMRequest {
   messages: LLMMessage[];
   temperature?: number;
   maxTokens?: number;
+  /**
+   * Optional structured-output hint. Providers that support it (e.g. OpenAI
+   * `response_format`) will enforce JSON output. Providers that don't should
+   * ignore this field and rely on the system prompt instead.
+   */
+  jsonMode?: boolean;
 }
 
 export interface LLMUsage {

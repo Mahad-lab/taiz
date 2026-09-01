@@ -14,6 +14,6 @@ export function ok<T>(c: Context, data: T, status: 200 | 201 = 200) {
   return c.json<SuccessBody<T>>({ ok: true, data }, status);
 }
 
-export function fail(c: Context, status: 400 | 404 | 409 | 500, code: string, message: string) {
+export function fail(c: Context, status: 400 | 404 | 409 | 500 | 503, code: string, message: string) {
   return c.json<ErrorBody>({ ok: false, error: { code, message } }, status);
 }

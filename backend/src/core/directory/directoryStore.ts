@@ -6,6 +6,8 @@ export interface DirectoryStore {
   getById(id: string): BusinessListing | undefined;
   listAll(): BusinessListing[];
   add(listing: BusinessListing): void;
+  listCities(): string[];
+  listCategories(): BusinessType[];
 }
 
 export function createDirectoryStore(): DirectoryStore {
@@ -35,5 +37,7 @@ export function createDirectoryStore(): DirectoryStore {
     getById: (id) => listings.get(id),
     listAll,
     add: (listing) => void listings.set(listing.id, listing),
+    listCities: () => Array.from(new Set(listAll().map(l => l.city))).sort(),
+    listCategories: () => Array.from(new Set(listAll().map(l => l.category))) as BusinessType[],
   };
 }

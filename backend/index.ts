@@ -16,7 +16,7 @@ const directory = createDirectoryStore();
 const catalog = createCatalogStore();
 seedDemoData(directory, catalog);
 
-const registry = createProviderRegistry({ openai: env.openaiApiKey });
+const registry = createProviderRegistry({ openai: env.openaiApiKey, openaiBaseUrl: env.openaiBaseUrl });
 const llm = createRouter(registry, MODEL_SELECTION);
 
 const businessAgents = Object.fromEntries(

@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Provider } from "../provider";
 import type { LLMRequest, LLMResponse } from "../types";
 
-const API_URL = "https://api.openai.com/v1/chat/completions";
+const DEFAULT_API_URL = "https://api.openai.com/v1/chat/completions";
 
 const responseSchema = z.object({
   model: z.string(),
@@ -18,7 +18,7 @@ interface OpenAIErrorBody {
   error?: { message?: string };
 }
 
-export function createOpenAIProvider(apiKey: string, baseUrl: string = API_URL): Provider {
+export function createOpenAIProvider(apiKey: string, baseUrl: string = DEFAULT_API_URL): Provider {
   return {
     name: "openai",
     async call(req: LLMRequest): Promise<LLMResponse> {
@@ -38,6 +38,7 @@ export function createOpenAIProvider(apiKey: string, baseUrl: string = API_URL):
           messages,
           temperature: req.temperature,
           max_tokens: req.maxTokens,
+          ...(req.jsonMode ? { response_format: { type: "json_object" } } : {}),
         }),
       });
 

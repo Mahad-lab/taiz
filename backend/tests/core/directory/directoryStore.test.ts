@@ -3,9 +3,9 @@ import { createDirectoryStore } from "../../../src/core/directory/directoryStore
 
 function storeWithSample() {
   const directory = createDirectoryStore();
-  directory.add({ id: "biz-sunrise", name: "Sunrise Bakehouse", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 1" });
-  directory.add({ id: "biz-oven", name: "Neighborhood Oven", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 2" });
-  directory.add({ id: "biz-olive", name: "Olive Table", category: "restaurant", city: "Karachi", neighborhood: "DHA Phase 1" });
+  directory.add({ id: "biz-sunrise", name: "Sunrise Bakehouse", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 1", lat: 24.86, lng: 67.0 });
+  directory.add({ id: "biz-oven", name: "Neighborhood Oven", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 2", lat: 24.9, lng: 67.05 });
+  directory.add({ id: "biz-olive", name: "Olive Table", category: "restaurant", city: "Karachi", neighborhood: "DHA Phase 1", lat: 24.78, lng: 67.03 });
   return directory;
 }
 

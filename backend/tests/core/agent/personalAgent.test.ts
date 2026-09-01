@@ -6,9 +6,9 @@ import type { BusinessAgentLookup } from "../../../src/core/agent/personalAgent"
 
 function directory() {
   const store = createDirectoryStore();
-  store.add({ id: "biz-a", name: "A Bakery", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 1" });
-  store.add({ id: "biz-b", name: "B Bakery", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 2" });
-  store.add({ id: "biz-c", name: "C Restaurant", category: "restaurant", city: "Karachi", neighborhood: "DHA Phase 1" });
+  store.add({ id: "biz-a", name: "A Bakery", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 1", lat: 24.86, lng: 67.0 });
+  store.add({ id: "biz-b", name: "B Bakery", category: "bakery", city: "Karachi", neighborhood: "DHA Phase 2", lat: 24.9, lng: 67.05 });
+  store.add({ id: "biz-c", name: "C Restaurant", category: "restaurant", city: "Karachi", neighborhood: "DHA Phase 1", lat: 24.78, lng: 67.03 });
   return store;
 }
 

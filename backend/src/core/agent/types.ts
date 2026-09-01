@@ -38,4 +38,4 @@ export interface AvailabilityReply {
   etaMinutes?: number;
 }
 
-export type Intent = "check_availability";
+export type Intent = "check_availability" | "chat";

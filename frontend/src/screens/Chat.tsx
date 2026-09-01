@@ -174,7 +174,7 @@ export function Chat({ navigate }: ChatProps) {
             >
               <X className="size-5" />
             </button>
-            <button
+            {/* <button
               onClick={() => setIsRecording(!isRecording)}
               className={`flex size-9 items-center justify-center rounded-full transition-colors ${
                 isRecording ? "bg-red-500 text-white" : "text-on-surface-variant hover:bg-surface-container-high"
@@ -182,7 +182,7 @@ export function Chat({ navigate }: ChatProps) {
               aria-label="Voice input"
             >
               {isRecording ? <MicOff className="size-5" /> : <Mic className="size-5" />}
-            </button>
+            </button> */}
           </div>
         }
       />

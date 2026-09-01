@@ -38,7 +38,7 @@ export function TopAppBar({ title, left, right, onBack, dark, center, className 
         className,
       )}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2">{leftSlot}</div>
+      <div className={cn("flex min-w-0 items-center gap-2", (left || onBack) && "flex-1")}>{leftSlot}</div>
       {title && (
         <div
           className={cn(

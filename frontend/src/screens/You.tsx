@@ -7,6 +7,7 @@ import { PermissionRow } from "@/components/shared/PermissionRow";
 import { customerTabHandler } from "@/lib/nav";
 import type { Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
+import type { ComparisonDisplay } from "@/state/types";
 
 interface YouProps {
   navigate: (route: Route) => void;
@@ -18,9 +19,16 @@ const PRIVACY_ITEMS = [
   { label: "Agent history", detail: "Stored on this device" },
 ];
 
+const COMPARISON_OPTIONS: { value: ComparisonDisplay; label: string; description: string }[] = [
+  { value: "inline", label: "Inline cards", description: "Options appear as cards in the chat." },
+  { value: "sheet", label: "Compact sheet", description: "Options in a scrollable panel." },
+  { value: "expandable", label: "Expandable", description: "Tap to reveal the options." },
+];
+
 /** Identity, agent permissions, and privacy — "your agent, your terms." */
 export function You({ navigate }: YouProps) {
-  const { user, permissions, setPermission, reset, showToast } = useApp();
+  const { user, permissions, setPermission, chatPreferences, setChatPreferences, reset, showToast } =
+    useApp();
   const onTab = customerTabHandler(navigate, showToast);
 
   return (
@@ -34,7 +42,7 @@ export function You({ navigate }: YouProps) {
           </span>
           <div className="min-w-0">
             <h2 className="text-[18px] font-bold text-primary">{user?.name || "User"}</h2>
-            <p className="mt-0.5 font-mono text-[12px] text-on-surface-variant">{user?.location || "Select a location"}</p>
+            <p className="mt-0.5 font-mono text-[12px] text-on-surface-variant">Select a location</p>
           </div>
         </section>
 
@@ -83,6 +91,42 @@ export function You({ navigate }: YouProps) {
               checked={permissions.transact}
               onChange={transact => setPermission({ transact })}
             />
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-deep-slate/10 bg-white p-4">
+          <h2 className="text-[15px] font-semibold text-primary">Chat preferences</h2>
+          <p className="mt-0.5 text-[13px] text-on-surface-variant">How would you like comparison results to appear?</p>
+          <div className="mt-3 flex flex-col gap-2">
+            {COMPARISON_OPTIONS.map(opt => {
+              const selected = chatPreferences.comparisonDisplay === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setChatPreferences({ comparisonDisplay: opt.value });
+                    showToast(`Comparison view: ${opt.label}`);
+                  }}
+                  className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
+                    selected
+                      ? "border-secondary bg-secondary/5"
+                      : "border-deep-slate/10 bg-white hover:border-electric-mint"
+                  }`}
+                >
+                  <span
+                    className={`mt-0.5 size-4 shrink-0 rounded-full border-2 ${
+                      selected ? "border-secondary bg-secondary" : "border-deep-slate/30"
+                    }`}
+                  >
+                    {selected && <span className="block size-full scale-50 rounded-full bg-white" />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-medium text-primary">{opt.label}</p>
+                    <p className="mt-0.5 text-[12px] text-on-surface-variant">{opt.description}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </section>
 

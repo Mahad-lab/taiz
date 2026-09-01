@@ -9,7 +9,7 @@ import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { TopAppBar } from "@/components/layout/TopAppBar";
 import { Logo } from "@/components/shared/Logo";
 import { customerTabHandler } from "@/lib/nav";
-import { STATUS_ROUTE, type Route } from "@/lib/router";
+import { type Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
 import type { Category, RequestStatus } from "@/state/types";
 
@@ -35,33 +35,33 @@ interface HomeProps {
 }
 
 export function Home({ navigate }: HomeProps) {
-  const { request, startRequest, showToast } = useApp();
+  const { request, sendChatMessage, showToast } = useApp();
   const [text, setText] = useState("");
   const [category, setCategory] = useState<Category>("bakery");
   const [city, setCity] = useState("Karachi");
 
-  const launch = () => {
-    if (!text.trim()) {
+  const launch = async (initialText?: string) => {
+    const messageText = (initialText ?? text).trim();
+    if (!messageText) {
       showToast("Tell Taiz what you're looking for");
       return;
     }
-    startRequest({
-      item: text.trim(),
-      quantity: 1,
-      city: city.trim() || "Karachi",
-      category,
-    });
-    navigate("agent-task");
+    setText("");
+    navigate("chat");
+    try {
+      await sendChatMessage(messageText);
+    } catch {
+      // Error surfaced in chat
+    }
   };
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    launch();
+    void launch();
   };
 
   const onTab = customerTabHandler(navigate, showToast);
   const activeTask = request && request.status !== "declined" ? request : null;
-
   return (
     <DeviceFrame>
       <TopAppBar
@@ -129,7 +129,7 @@ export function Home({ navigate }: HomeProps) {
             {SUGGESTIONS.map(s => (
               <button
                 key={s}
-                onClick={launch}
+                onClick={() => void launch(s)}
                 className="rounded-full border border-deep-slate/10 bg-white px-3.5 py-2 text-[13px] text-on-surface transition-colors hover:border-electric-mint"
               >
                 {s}
@@ -142,7 +142,7 @@ export function Home({ navigate }: HomeProps) {
           <h2 className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">Active requests</h2>
           {activeTask ? (
             <button
-              onClick={() => navigate(STATUS_ROUTE[activeTask.status] ?? "agent-task")}
+              onClick={() => navigate("chat")}
               className="flex w-full items-center justify-between gap-3 rounded-lg border border-deep-slate/10 bg-white p-4 text-left transition-colors hover:border-electric-mint"
             >
               <div className="min-w-0">

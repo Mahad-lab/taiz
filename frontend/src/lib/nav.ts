@@ -7,6 +7,8 @@ const CUSTOMER_TAB_ROUTES: Partial<Record<NavTabId, Route>> = {
   discover: "discover",
   activity: "activity",
   you: "you",
+  chat: "chat",
+  products: "products",
 };
 
 /** Resolve a customer bottom-nav tab to a route, or null when there's nothing to show. */
@@ -16,8 +18,10 @@ export function customerTabRoute(tab: NavTabId): Route | null {
 
 const PROVIDER_TAB_ROUTES: Partial<Record<NavTabId, Route>> = {
   jobs: "provider",
-  requests: "provider",
-  explore: "provider-explore",
+  orders: "provider-orders",
+  products: "provider-products",
+  chat: "provider-chat",
+  settings: "provider-settings",
   profile: "provider-profile",
 };
 

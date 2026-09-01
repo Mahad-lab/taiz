@@ -54,4 +54,26 @@ export interface Permissions {
   transact: boolean;
 }
 
+/** How comparison results are rendered inside the chat thread. */
+export type ComparisonDisplay = "inline" | "sheet" | "expandable";
+
+export interface ChatPreferences {
+  comparisonDisplay: ComparisonDisplay;
+}
+
+/** A single message in the chat thread. */
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+  status: "sending" | "sent" | "error";
+  metadata?: {
+    comparison?: AvailabilityComparison;
+    orderId?: string;
+    reply?: AvailabilityReply;
+    pendingConfirmation?: boolean;
+  };
+}
+
 export type { AvailabilityComparison, AvailabilityReply, Order };

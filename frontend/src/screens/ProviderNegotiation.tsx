@@ -1,8 +1,7 @@
 import { useApp } from '@/state/AppContext';
 
 export default function ProviderSettings() {
-  const { state } = useApp();
-  const businessId = state.user.businessId;
+  const { user, businessId } = useApp();
 
   return (
     <div className="space-y-6">
@@ -19,6 +18,12 @@ export default function ProviderSettings() {
         <section>
           <h3 className="text-lg font-semibold">Linked Business</h3>
           <p className="text-sm text-stone-600">Business ID: {businessId}</p>
+        </section>
+      )}
+      {user && (
+        <section>
+          <h3 className="text-lg font-semibold">Account</h3>
+          <p className="text-sm text-stone-600">Signed in as {user.name}</p>
         </section>
       )}
     </div>

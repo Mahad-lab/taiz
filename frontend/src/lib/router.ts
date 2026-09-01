@@ -16,7 +16,13 @@ export type Route =
   | "provider"
   | "provider-negotiation"
   | "provider-explore"
-  | "provider-profile";
+  | "provider-profile"
+  | "chat"
+  | "products"
+  | "provider-orders"
+  | "provider-products"
+  | "provider-chat"
+  | "provider-settings";
 
 const ROUTE_ORDER: Route[] = [
   "welcome",
@@ -33,6 +39,12 @@ const ROUTE_ORDER: Route[] = [
   "provider-negotiation",
   "provider-explore",
   "provider-profile",
+  "chat",
+  "products",
+  "provider-orders",
+  "provider-products",
+  "provider-chat",
+  "provider-settings",
 ];
 
 /** Where a request at a given status should be resumed from. */

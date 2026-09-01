@@ -4,9 +4,12 @@ import { Activity } from "@/screens/Activity";
 import { AgentActivity } from "@/screens/AgentActivity";
 import { AgentChatLog } from "@/screens/AgentChatLog";
 import { AgentTask } from "@/screens/AgentTask";
+import { Chat } from "@/screens/Chat";
 import { Discover } from "@/screens/Discover";
 import { Home } from "@/screens/Home";
 import { OrderConfirmation } from "@/screens/OrderConfirmation";
+import { Orders } from "@/screens/Orders";
+import { Products } from "@/screens/Products";
 import { ProviderDashboard } from "@/screens/ProviderDashboard";
 import { ProviderExplore } from "@/screens/ProviderExplore";
 import { ProviderProfile } from "@/screens/ProviderProfile";
@@ -25,6 +28,18 @@ function Router() {
       return <Discover navigate={navigate} />;
     case "you":
       return <You navigate={navigate} />;
+    case "chat":
+      return <Chat navigate={navigate} />;
+    case "products":
+      return <Products navigate={navigate} />;
+    case "provider-orders":
+      return <Orders navigate={navigate} />;
+    case "provider-products":
+      return <Products navigate={navigate} />;
+    case "provider-chat":
+      return <Chat navigate={navigate} />;
+    case "provider-settings":
+      return <ProviderProfile navigate={navigate} />;
     case "agent-task":
       return <AgentTask navigate={navigate} />;
     case "agent-activity":

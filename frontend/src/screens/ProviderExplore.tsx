@@ -88,7 +88,7 @@ export function ProviderExplore({ navigate }: ProviderExploreProps) {
       </main>
 
       <div className="absolute inset-x-0 bottom-0 z-30">
-        <BottomNav variant="provider" active="explore" onSelect={onTab} />
+        <BottomNav variant="provider" active="products" onSelect={onTab} />
       </div>
     </DeviceFrame>
   );

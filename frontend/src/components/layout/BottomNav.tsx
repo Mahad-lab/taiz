@@ -1,15 +1,25 @@
 import {
-  ArrowLeftRight,
   Bot,
   Briefcase,
   Compass,
-  Handshake,
-  UserRound,
+  MessageCircle,
+  Package,
+  Settings as SettingsIcon,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type NavTabId = "home" | "discover" | "activity" | "you" | "jobs" | "explore" | "negotiations" | "profile";
+export type NavTabId =
+  | "home"
+  | "discover"
+  | "activity"
+  | "you"
+  | "chat"
+  | "products"
+  | "jobs"
+  | "orders"
+  | "profile"
+  | "settings";
 
 interface NavTab {
   id: NavTabId;
@@ -18,17 +28,15 @@ interface NavTab {
 }
 
 const CUSTOMER_TABS: NavTab[] = [
-  { id: "home", label: "Home", icon: Bot },
-  { id: "discover", label: "Discover", icon: Compass },
-  { id: "activity", label: "Activity", icon: ArrowLeftRight },
-  { id: "you", label: "You", icon: UserRound },
+  { id: "chat", label: "Chat", icon: MessageCircle },
+  { id: "products", label: "Products", icon: Package },
 ];
 
 const PROVIDER_TABS: NavTab[] = [
-  { id: "jobs", label: "Jobs", icon: Briefcase },
-  { id: "explore", label: "Explore", icon: Compass },
-  { id: "negotiations", label: "Agent", icon: Bot },
-  { id: "profile", label: "Profile", icon: UserRound },
+  { id: "chat", label: "Chat", icon: MessageCircle },
+  { id: "orders", label: "Orders", icon: Briefcase },
+  { id: "products", label: "Products", icon: Package },
+  { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 
 interface BottomNavProps {

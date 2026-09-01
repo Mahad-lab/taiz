@@ -142,6 +142,40 @@ export async function compare(
   });
 }
 
+export interface ChatContextMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ChatIntent {
+  item: string;
+  quantity: number;
+  city: string;
+  category: BusinessType;
+  neighborhood?: string;
+}
+
+export interface ChatMessageResponse {
+  agentId: string;
+  reply: string;
+  intent?: ChatIntent;
+  comparison?: AvailabilityComparison;
+}
+
+export async function sendChatMessage(
+  message: string,
+  context: ChatContextMessage[] = [],
+): Promise<ChatMessageResponse> {
+  return request(`/agents/${PERSONAL_AGENT_ID}/message`, {
+    method: "POST",
+    body: JSON.stringify({
+      intent: "chat",
+      message,
+      context,
+    }),
+  });
+}
+
 export interface CreateOrderInput {
   personalAgentId: string;
   businessId: string;

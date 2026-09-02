@@ -9,6 +9,7 @@ import { createProviderRegistry, createRouter } from "./src/core/llm/router";
 import { createOrderService } from "./src/core/order/orderService";
 import { createInMemoryOrderStore } from "./src/core/order/orderStore";
 import { createApp } from "./src/server/app";
+import { cors } from "hono/cors";
 
 const directory = createDirectoryStore();
 const catalog = createCatalogStore();
@@ -19,14 +20,14 @@ const personalAgents: Record<string, PersonalAgent> = {
 };
 
 export default {
-  async fetch(request: Request, cfEnv?: { OPENAI_API_KEY?: string; OPENAI_BASE_URL?: string }): Promise<Response> {
-    const env = loadEnv({
+  async fetch(request: Request, env?: { OPENAI_API_KEY?: string; OPENAI_BASE_URL?: string }): Promise<Response> {
+    const appEnv = loadEnv({
       PORT: "3000",
-      OPENAI_API_KEY: cfEnv?.OPENAI_API_KEY,
-      OPENAI_BASE_URL: cfEnv?.OPENAI_BASE_URL,
+      OPENAI_API_KEY: env?.OPENAI_API_KEY,
+      OPENAI_BASE_URL: env?.OPENAI_BASE_URL,
     });
 
-    const registry = createProviderRegistry({ openai: env.openaiApiKey, openaiBaseUrl: env.openaiBaseUrl });
+    const registry = createProviderRegistry({ openai: appEnv.openaiApiKey, openaiBaseUrl: appEnv.openaiBaseUrl });
     const llm = createRouter(registry, MODEL_SELECTION);
 
     const businessAgents = Object.fromEntries(
@@ -47,6 +48,13 @@ export default {
       personalAgents,
       businessAgents,
     });
+
+    // Add CORS support for Cloudflare Workers
+    app.use("*", cors({
+      origin: "*",
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+    }));
 
     return app.fetch(request);
   },

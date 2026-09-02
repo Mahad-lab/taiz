@@ -230,17 +230,6 @@ export function Chat({ navigate }: ChatProps) {
           );
         })}
 
-        {isSending && (
-          <div className="flex items-start gap-2">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary/20">
-              <Bot className="size-4 text-secondary" />
-            </div>
-            <div className="rounded-2xl rounded-tl-sm bg-white px-4 py-2.5 shadow-sm">
-              <TypingDots />
-            </div>
-          </div>
-        )}
-
         {!isSending &&
           allMessages.length > 1 &&
           allMessages[allMessages.length - 1]?.role === "assistant" &&

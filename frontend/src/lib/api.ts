@@ -1,13 +1,15 @@
 /**
  * Thin client for the Taiz backend (Hono/Bun).
  *
- * All calls go through `/api` (proxied to the backend by the frontend's Bun
- * dev server — see `src/index.ts`). The backend speaks an envelope
+ * All calls go directly to the backend. The backend speaks an envelope
  * `{ ok: true, data }` / `{ ok: false, error: { code, message } }`; `request`
  * unwraps it and throws on failure so callers can `try/catch` and surface a toast.
  */
 
-export const API_BASE = "/api";
+import { API_BASE } from "../config";
+
+console.log("🔧 API_BASE resolved to:", API_BASE);
+export { API_BASE };
 
 export const PERSONAL_AGENT_ID = "agent-user";
 

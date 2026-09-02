@@ -1,21 +1,9 @@
 import { serve } from "bun";
 import index from "./index.html";
-
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
+import { API_BASE } from "./config";
 
 const server = serve({
   routes: {
-    // Proxy API calls to the Taiz backend (single origin, no CORS).
-    "/api/*": async (req) => {
-      const url = new URL(req.url);
-      const target = `${BACKEND_URL}${url.pathname.replace(/^\/api/, "")}${url.search}`;
-      return fetch(target, {
-        method: req.method,
-        headers: req.headers,
-        body: req.method === "GET" || req.method === "HEAD" ? undefined : req.body,
-      });
-    },
-
     // Serve index.html for all unmatched routes.
     "/*": index,
   },
@@ -29,4 +17,5 @@ const server = serve({
   },
 });
 
-console.log(`🚀 Server running at ${server.url} (proxying /api → ${BACKEND_URL})`);
+console.log(`🚀 Server running at ${server.url}`);
+console.log(`📡 Backend API: ${API_BASE}`);

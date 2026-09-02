@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import type { CatalogStore } from "../core/catalog/catalogStore";
 import type { DirectoryStore } from "../core/directory/directoryStore";
 import type { LLMRouter } from "../core/llm/router";
@@ -30,6 +31,7 @@ export function createApp(deps: AppDeps): Hono {
   app.onError(errorHandler);
   app.use("*", requestLogger);
   app.use("*", auth);
+  app.use("*", cors({ origin: "*", allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], allowHeaders: ["Content-Type", "Authorization"] }));
 
   app.get("/", (c) => ok(c, { name: "taiz-backend", status: "running" }));
   app.route("/agents", agentsRoutes(deps));

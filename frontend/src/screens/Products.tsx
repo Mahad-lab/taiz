@@ -135,13 +135,11 @@ export function Products({ navigate }: ProductsProps) {
             <div className="flex flex-col gap-3">
               {loaded && filteredBusinesses.length > 0 ? (
                 filteredBusinesses.map(business => (
-                  <button
+                  <ProviderCard
                     key={business.id}
+                    provider={business}
                     onClick={() => setSelectedBusiness(business.id)}
-                    className="text-left"
-                  >
-                    <ProviderCard provider={business} onClick={() => {}} />
-                  </button>
+                  />
                 ))
               ) : (
                 <EmptyState icon={Search} title={loaded ? "No matching providers" : "Loading providers..."} description="Try a different category or search term." />

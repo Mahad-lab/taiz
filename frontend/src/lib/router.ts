@@ -4,6 +4,7 @@ import type { RequestStatus } from "@/state/types";
 
 export type Route =
   | "welcome"
+  | "onboarding"
   | "home"
   | "discover"
   | "you"
@@ -20,6 +21,7 @@ export type Route =
 
 const ROUTE_ORDER: Route[] = [
   "welcome",
+  "onboarding",
   "home",
   "discover",
   "you",

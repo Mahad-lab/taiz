@@ -6,6 +6,7 @@ import { AgentChatLog } from "@/screens/AgentChatLog";
 import { AgentTask } from "@/screens/AgentTask";
 import { Discover } from "@/screens/Discover";
 import { Home } from "@/screens/Home";
+import { Onboarding } from "@/screens/Onboarding";
 import { OrderConfirmation } from "@/screens/OrderConfirmation";
 import { ProviderDashboard } from "@/screens/ProviderDashboard";
 import { ProviderExplore } from "@/screens/ProviderExplore";
@@ -20,6 +21,8 @@ function Router() {
   const [route, navigate] = useHashRoute();
 
   switch (route) {
+    case "onboarding":
+      return <Onboarding navigate={navigate} />;
     case "home":
       return <Home navigate={navigate} />;
     case "discover":

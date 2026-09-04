@@ -1,0 +1,5 @@
+name = "taiz"
+pages_build_output_dir = "dist"
+
+[vars]
+BUN_PUBLIC_API_BASE = "https://taiz.mahadahmed.workers.dev"

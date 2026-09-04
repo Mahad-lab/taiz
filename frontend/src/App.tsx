@@ -1,38 +1,75 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APITester } from "./APITester";
-import "./index.css";
+import { ToastViewport } from "@/components/layout/ToastViewport";
+import { useHashRoute } from "@/lib/router";
+import { Activity } from "@/screens/Activity";
+import { AgentActivity } from "@/screens/AgentActivity";
+import { AgentChatLog } from "@/screens/AgentChatLog";
+import { AgentTask } from "@/screens/AgentTask";
+import { Chat } from "@/screens/Chat";
+import { Discover } from "@/screens/Discover";
+import { Home } from "@/screens/Home";
+import { OrderConfirmation } from "@/screens/OrderConfirmation";
+import { Orders } from "@/screens/Orders";
+import { Products } from "@/screens/Products";
+import { ProviderDashboard } from "@/screens/ProviderDashboard";
+import { ProviderExplore } from "@/screens/ProviderExplore";
+import { ProviderProfile } from "@/screens/ProviderProfile";
+import { Results } from "@/screens/Results";
+import { Welcome } from "@/screens/Welcome";
+import { You } from "@/screens/You";
+import { AppProvider } from "@/state/AppContext";
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+function Router() {
+  const [route, navigate] = useHashRoute();
+
+  switch (route) {
+    case "home":
+      return <Home navigate={navigate} />;
+    case "discover":
+      return <Discover navigate={navigate} />;
+    case "you":
+      return <You navigate={navigate} />;
+    case "chat":
+      return <Chat navigate={navigate} />;
+    case "products":
+      return <Products navigate={navigate} />;
+    case "provider-orders":
+      return <Orders navigate={navigate} />;
+    case "provider-products":
+      return <Products navigate={navigate} />;
+    case "provider-chat":
+      return <Chat navigate={navigate} />;
+    case "provider-settings":
+      return <ProviderProfile navigate={navigate} />;
+    case "agent-task":
+      return <AgentTask navigate={navigate} />;
+    case "agent-activity":
+      return <AgentActivity navigate={navigate} />;
+    case "agent-chat-log":
+      return <AgentChatLog navigate={navigate} />;
+    case "activity":
+      return <Activity navigate={navigate} />;
+    case "review":
+      return <Results navigate={navigate} />;
+    case "confirmed":
+      return <OrderConfirmation navigate={navigate} />;
+    case "provider":
+      return <ProviderDashboard navigate={navigate} />;
+    case "provider-explore":
+      return <ProviderExplore navigate={navigate} />;
+    case "provider-profile":
+      return <ProviderProfile navigate={navigate} />;
+    case "welcome":
+    default:
+      return <Welcome navigate={navigate} />;
+  }
+}
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
-      <div className="flex justify-center items-center gap-8 mb-8">
-        <img
-          src={logo}
-          alt="Bun Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#646cffaa] scale-120"
-        />
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#61dafbaa] [animation:spin_20s_linear_infinite]"
-        />
-      </div>
-      <Card>
-        <CardHeader className="gap-4">
-          <CardTitle className="text-3xl font-bold">Bun + React</CardTitle>
-          <CardDescription>
-            Edit <code className="rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono">src/App.tsx</code> and save to
-            test HMR
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <APITester />
-        </CardContent>
-      </Card>
-    </div>
+    <AppProvider>
+      <Router />
+      <ToastViewport />
+    </AppProvider>
   );
 }
 

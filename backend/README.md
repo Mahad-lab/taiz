@@ -1,15 +1,30 @@
-# backend
+# Taiz Backend
 
-To install dependencies:
+Federated personal-agent platform: a user's personal agent discovers bakery and
+restaurant items across business agents and places orders at **fixed, listed
+prices**. There is no price negotiation in Taiz — anywhere.
+
+Built with [Hono](https://hono.dev) on [Bun](https://bun.com).
+
+## Install
 
 ```bash
 bun install
 ```
 
-To run:
+## Environment variables
+
+| Var              | Required | Default | Purpose                                   |
+| ---------------- | -------- | ------- | ----------------------------------------- |
+| `PORT`           | no       | `3000`  | HTTP port                                 |
+| `OPENAI_API_KEY` | no       | —       | Enables LLM summaries; core flow works without it |
+
+Copy `.env.example` (or create `.env`) if you want non-defaults.
+
+## Run
 
 ```bash
-bun run index.ts
+bun run dev        # http://localhost:3000
 ```
 
 This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.

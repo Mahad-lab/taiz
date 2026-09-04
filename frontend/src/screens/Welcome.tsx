@@ -1,8 +1,11 @@
 import { ArrowRight, Toolbox } from "lucide-react";
+import { useState } from "react";
 
 import { Logo } from "@/components/shared/Logo";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useApp } from "@/state/AppContext";
 import type { Route } from "@/lib/router";
 
@@ -14,6 +17,8 @@ interface WelcomeProps {
 
 export function Welcome({ navigate }: WelcomeProps) {
   const { setRole } = useApp();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
 
   const choose = (role: "customer" | "provider") => {
     setRole(role);
@@ -42,6 +47,27 @@ export function Welcome({ navigate }: WelcomeProps) {
         </div>
 
         <div className="flex w-full max-w-sm flex-col gap-3 pb-10">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="welcome-name">Your name</Label>
+              <Input
+                id="welcome-name"
+                placeholder="Enter your name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="welcome-phone">Phone number</Label>
+              <Input
+                id="welcome-phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+              />
+            </div>
+          </div>
           <Button
             onClick={() => choose("customer")}
             variant="secondary"
@@ -57,7 +83,7 @@ export function Welcome({ navigate }: WelcomeProps) {
             size="pill"
             className="w-full"
           >
-            I want to offer my services
+            I run a business
             <Toolbox className="size-4" strokeWidth={2.5} />
           </Button>
         </div>

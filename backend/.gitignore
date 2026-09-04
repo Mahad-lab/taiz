@@ -30,5 +30,11 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # IntelliJ based IDEs
 .idea
 
+# wrangler local dev state (local D1 sqlite, etc.)
+.wrangler
+
+# this project standardizes on bun.lock; don't also commit npm's lockfile
+package-lock.json
+
 # Finder (MacOS) folder config
 .DS_Store

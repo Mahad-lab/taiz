@@ -27,37 +27,28 @@ Copy `.env.example` (or create `.env`) if you want non-defaults.
 bun run dev        # http://localhost:3000
 ```
 
-Seeded demo data includes two bakeries (`biz-sunrise`, `biz-oven`) and one
-restaurant (`biz-olive`).
+This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
 
-## Try it
+## Directory data (D1)
 
-```bash
-# Compare croissants across all Karachi bakeries via the personal agent
-curl -s localhost:3000/agents/agent-user/message \
-  -H 'content-type: application/json' \
-  -d '{"item":"Croissant","quantity":6,"city":"Karachi","category":"bakery"}'
+Schema and seed data for the Karachi-only directory (`cities`, `zones`, `areas`)
+live in `migrations/` and `seed-data/`. This is data-layer only -- no API
+endpoints exist yet.
 
-# Place an order for the cheapest result (human-approval gate applies)
-curl -s localhost:3000/orders \
-  -H 'content-type: application/json' \
-  -d '{"personalAgentId":"agent-user","businessId":"biz-sunrise","items":[{"productId":"p-1","quantity":6}]}'
-
-# Human approves, then confirms (confirming before approval → 409)
-curl -s -X POST localhost:3000/orders/<id>/approve
-curl -s -X POST localhost:3000/orders/<id>/confirm
-```
-
-## Test
+Apply the schema to a local D1 database (no Cloudflare account needed):
 
 ```bash
-bun test           # unit + integration + full-flow tests
-bun run typecheck  # tsc --noEmit
+bun run db:migrate
 ```
 
-## Layout
+Seed the `areas` table for Karachi from the committed source snapshot
+(re-runnable; duplicates are skipped, not re-inserted):
 
-- `src/core/` — pure domain logic. No HTTP, no framework. Fully testable offline.
-- `src/server/` — thin Hono layer: parse request → call a core function → shape response.
-- `src/config/` — env validation, model selection, demo seed data.
-- `tests/` — mirrors `src/`; uses `bun:test`. See `docs/ARCHITECTURE.md`.
+```bash
+bun run db:seed
+```
+
+Both commands default to `--local`. Append `:remote` (`db:migrate:remote`,
+`db:seed:remote`) to target the real D1 database once `wrangler.toml`'s
+placeholder `database_id` has been replaced with a real one from
+`wrangler d1 create taiz-directory-db`.

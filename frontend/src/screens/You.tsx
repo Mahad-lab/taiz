@@ -162,14 +162,11 @@ export function You({ navigate }: YouProps) {
             Sign out
           </button>
           <button
-            onClick={() => {
-              reset();
-              showToast("Demo state reset");
-            }}
+            onClick={() => navigate("reset")}
             className="flex items-center justify-center gap-2 rounded-lg py-2 font-mono text-[12px] text-on-surface-variant transition-colors hover:bg-surface-container-high"
           >
             <RotateCcw className="size-3.5" />
-            Reset demo state
+            Reset all data
           </button>
         </div>
       </main>

@@ -1,49 +1,32 @@
-import { ArrowRight, LogIn } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, LogIn, Store } from "lucide-react";
+import { useEffect } from "react";
 
-import * as api from "@/lib/api";
 import { Logo } from "@/components/shared/Logo";
 import { DeviceFrame } from "@/components/layout/DeviceFrame";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/state/AppContext";
 import type { Route } from "@/lib/router";
+import type { Role } from "@/state/types";
 
 import robot from "@/assets/robot.svg";
 
 interface WelcomeProps {
-  navigate: (route: Route) => void;
+  navigate: (route: Route, role?: Role) => void;
 }
 
 export function Welcome({ navigate }: WelcomeProps) {
-  const { login, user } = useApp();
-  const [name, setName] = useState("");
-  const [role, setRole] = useState<"customer" | "provider">("customer");
-  const [businessId, setBusinessId] = useState("");
-  const [businesses, setBusinesses] = useState<{ id: string; name: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { user } = useApp();
 
-  const canLogin = name.trim().length > 0 && (role === "customer" || (role === "provider" && businessId));
-
-  const handleLogin = async () => {
-    setError("");
-    if (!name.trim()) { setError("Enter your name"); return; }
-    if (role === "provider" && !businessId) { setError("Select a bakery"); return; }
-    const u = { name: name.trim(), role, businessId: role === "provider" ? businessId : undefined };
-    login(u);
-    navigate(u.role === "customer" ? "home" : "provider");
-  };
-
+  // Already signed in? Skip straight to the relevant dashboard.
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const list = await api.listBusinesses().catch(() => null);
-        if (!cancelled && list) setBusinesses(list);
-      } catch { /* ignore */ }
-    })();
-    return () => { cancelled = true; };
-  }, []);
+    if (user) {
+      navigate(user.role === "provider" ? "provider" : "home");
+    }
+  }, [user, navigate]);
+
+  const start = (role: Role) => {
+    navigate("onboard", role);
+  };
 
   return (
     <DeviceFrame className="relative overflow-hidden">
@@ -67,50 +50,33 @@ export function Welcome({ navigate }: WelcomeProps) {
         </div>
 
         <div className="flex w-full max-w-sm flex-col gap-3 pb-10">
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Your name"
-            className="w-full rounded-lg border border-deep-slate/10 bg-white px-4 py-3 text-[15px] text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-electric-mint"
-          />
-          <div className="flex gap-2">
-            {(["customer", "provider"] as const).map(r => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => { setRole(r); setBusinessId(""); }}
-                className={`flex-1 rounded-full border px-3.5 py-2.5 text-[13px] font-medium capitalize transition-colors ${
-                  role === r
-                    ? r === "customer"
-                      ? "border-electric-mint bg-electric-mint/10 text-deep-slate"
-                      : "border-electric-mint bg-electric-mint/10 text-deep-slate"
-                    : "border-deep-slate/10 bg-white text-on-surface-variant hover:border-electric-mint"
-                }`}
-              >
-                {r === "customer" ? "I need a service" : "I run a bakery"}
-              </button>
-            ))}
-          </div>
-
-          {role === "provider" && (
-            <select
-              value={businessId}
-              onChange={e => setBusinessId(e.target.value)}
-              className="w-full rounded-lg border border-deep-slate/10 bg-white px-4 py-3 text-[15px] text-on-surface outline-none transition-colors focus:border-electric-mint"
-            >
-              <option value="">Select your bakery</option>
-              {businesses.map(b => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
-          )}
-
-          {error && <p className="text-center text-[13px] text-error">{error}</p>}
-
-          <Button onClick={handleLogin} variant="secondary" size="pill" className="w-full" disabled={!canLogin || loading}>
-            {loading ? "Signing in…" : "Get started" }
-            <LogIn className="size-4" strokeWidth={2.5} />
+          <Button
+            onClick={() => start("customer")}
+            variant="secondary"
+            size="pill"
+            className="w-full"
+          >
+            Find food & services
+            <ArrowRight className="size-4" strokeWidth={2.5} />
           </Button>
+          <Button
+            onClick={() => start("provider")}
+            variant="solid-dark"
+            size="pill"
+            className="w-full"
+          >
+            I run a business
+            <Store className="size-4" strokeWidth={2.5} />
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => start("customer")}
+            className="mt-1 flex items-center justify-center gap-1.5 self-center text-[13px] font-medium text-on-surface-variant transition-colors hover:text-primary"
+          >
+            <LogIn className="size-3.5" strokeWidth={2.5} />
+            Already have an account? Sign in
+          </button>
         </div>
       </div>
     </DeviceFrame>

@@ -4,6 +4,7 @@ export type Role = "customer" | "provider";
 
 export interface User {
   name: string;
+  phone?: string;
   role: Role;
   businessId?: string;
 }

@@ -7,6 +7,7 @@ import { AgentTask } from "@/screens/AgentTask";
 import { Chat } from "@/screens/Chat";
 import { Discover } from "@/screens/Discover";
 import { Home } from "@/screens/Home";
+import { Onboard } from "@/screens/Onboard";
 import { OrderConfirmation } from "@/screens/OrderConfirmation";
 import { Orders } from "@/screens/Orders";
 import { Products } from "@/screens/Products";
@@ -14,16 +15,21 @@ import { ProviderDashboard } from "@/screens/ProviderDashboard";
 import { ProviderExplore } from "@/screens/ProviderExplore";
 import { ProviderProfile } from "@/screens/ProviderProfile";
 import { Results } from "@/screens/Results";
+import { Reset } from "@/screens/Reset";
 import { Welcome } from "@/screens/Welcome";
 import { You } from "@/screens/You";
 import { AppProvider } from "@/state/AppContext";
 
 function Router() {
-  const [route, navigate] = useHashRoute();
+  const [route, navigate, onboardRole] = useHashRoute();
 
   switch (route) {
     case "home":
       return <Home navigate={navigate} />;
+    case "onboard":
+      return <Onboard navigate={navigate} initialRole={onboardRole ?? "customer"} />;
+    case "reset":
+      return <Reset navigate={navigate} />;
     case "discover":
       return <Discover navigate={navigate} />;
     case "you":

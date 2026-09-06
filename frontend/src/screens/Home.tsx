@@ -1,5 +1,5 @@
 import { ArrowRight, Inbox, Settings } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,7 +11,7 @@ import { Logo } from "@/components/shared/Logo";
 import { customerTabHandler } from "@/lib/nav";
 import { type Route } from "@/lib/router";
 import { useApp } from "@/state/AppContext";
-import type { Category, RequestStatus } from "@/state/types";
+import type { RequestStatus } from "@/state/types";
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
   searching: "Searching",
@@ -21,7 +21,60 @@ const STATUS_LABEL: Record<RequestStatus, string> = {
   declined: "Declined",
 };
 
-const SUGGESTIONS = ["Find a nearby bakery", "Compare local providers"];
+const ROTATING_PROMPTS = [
+  "I need a cupcake",
+  "Order me a chocolate cake",
+  "Find a birthday cake under Rs 2,000",
+  "Get me fresh croissants for breakfast",
+  "Book a table for 4 tonight",
+];
+
+const QUICK_PROMPTS = ["Order me a chocolate cake", "I need a cupcake", "Book a table for 4 tonight"];
+
+const HOW_IT_WORKS = [
+  { title: "Ask", copy: "Tell Taiz what you need" },
+  { title: "Compare", copy: "Taiz shortlists the best" },
+  { title: "Confirm", copy: "Order in one tap" },
+];
+
+function useTypewriter(prompts: string[]) {
+  const [typed, setTyped] = useState("");
+  useEffect(() => {
+    let promptIndex = 0;
+    let charIndex = 0;
+    let deleting = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      const prompt = prompts[promptIndex] ?? "";
+      if (deleting) {
+        charIndex -= 2;
+        if (charIndex <= 0) {
+          charIndex = 0;
+          deleting = false;
+          promptIndex = (promptIndex + 1) % prompts.length;
+          setTyped("");
+          timer = setTimeout(tick, 400);
+          return;
+        }
+      } else {
+        charIndex += 1;
+        if (charIndex === prompt.length) {
+          deleting = true;
+          setTyped(prompt);
+          timer = setTimeout(tick, 1800);
+          return;
+        }
+      }
+      setTyped(prompt.slice(0, charIndex));
+      timer = setTimeout(tick, deleting ? 24 : 40 + Math.random() * 50);
+    };
+
+    timer = setTimeout(tick, 700);
+    return () => clearTimeout(timer);
+  }, [prompts]);
+  return typed;
+}
 
 function greeting() {
   const hour = new Date().getHours();
@@ -37,8 +90,7 @@ interface HomeProps {
 export function Home({ navigate }: HomeProps) {
   const { request, sendChatMessage, showToast } = useApp();
   const [text, setText] = useState("");
-  const [category, setCategory] = useState<Category>("bakery");
-  const [city, setCity] = useState("Karachi");
+  const typedPrompt = useTypewriter(ROTATING_PROMPTS);
 
   const launch = async (initialText?: string) => {
     const messageText = (initialText ?? text).trim();
@@ -90,43 +142,27 @@ export function Home({ navigate }: HomeProps) {
           onChange={setText}
           onSubmit={onSubmit}
           onVoice={() => showToast("Voice input — coming soon")}
+          placeholder={typedPrompt}
         />
 
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">Category</label>
-            <div className="mt-1.5 flex gap-2">
-              {(["bakery", "restaurant"] as Category[]).map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCategory(c)}
-                  className={`flex-1 rounded-full border px-3.5 py-2 text-[13px] font-medium capitalize transition-colors ${
-                    category === c
-                      ? "border-electric-mint bg-electric-mint/10 text-deep-slate"
-                      : "border-deep-slate/10 bg-white text-on-surface-variant hover:border-electric-mint/50"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
+        <section className="grid grid-cols-3 gap-3 rounded-lg border border-deep-slate/10 bg-white p-3">
+          {HOW_IT_WORKS.map((step, i) => (
+            <div key={step.title}>
+              <p className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">
+                <span className="flex size-4 items-center justify-center rounded-full bg-electric-mint/15 text-[9px] text-deep-slate">
+                  {i + 1}
+                </span>
+                {step.title}
+              </p>
+              <p className="mt-1 text-[11px] leading-4 text-on-surface-variant">{step.copy}</p>
             </div>
-          </div>
-          <div>
-            <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">City</label>
-            <input
-              value={city}
-              onChange={e => setCity(e.target.value)}
-              placeholder="Karachi"
-              className="mt-1.5 w-full rounded-md border border-deep-slate/10 bg-white py-2.5 px-3 text-[15px] text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/60 focus:border-electric-mint"
-            />
-          </div>
-        </div>
+          ))}
+        </section>
 
         <section className="flex flex-col gap-2">
           <h2 className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">Try asking</h2>
           <div className="flex flex-wrap gap-2">
-            {SUGGESTIONS.map(s => (
+            {QUICK_PROMPTS.map(s => (
               <button
                 key={s}
                 onClick={() => void launch(s)}

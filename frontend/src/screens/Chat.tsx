@@ -207,6 +207,7 @@ export function Chat({ navigate }: ChatProps) {
               confirmedOrderIds={confirmedOrderIds}
               pendingConfirmId={pendingConfirmId}
               showUnavailable={!!showUnavailable[msg.id]}
+              isLast={isLast}
               onToggleUnavailable={() =>
                 setShowUnavailable(prev => ({ ...prev, [msg.id]: !prev[msg.id] }))
               }
@@ -246,6 +247,7 @@ export function Chat({ navigate }: ChatProps) {
               ))}
             </div>
           )}
+        {/* Comparison summary pane – disabled until type narrowing is added */}
       </main>
 
       <div className="absolute inset-x-0 bottom-0 z-30">
@@ -271,6 +273,7 @@ interface MessageBubbleProps {
   confirmedOrderIds: Set<string>;
   pendingConfirmId: string | null;
   showUnavailable: boolean;
+  isLast: boolean;
   onToggleUnavailable: () => void;
   onConfirm: (messageId: string, reply: AvailabilityReply, comparison: AvailabilityComparison) => void;
   onRetry?: () => void;
@@ -283,6 +286,7 @@ function MessageBubble({
   confirmedOrderIds,
   pendingConfirmId,
   showUnavailable,
+  isLast,
   onToggleUnavailable,
   onConfirm,
   onRetry,
@@ -293,6 +297,7 @@ function MessageBubble({
   const isSending = message.status === "sending";
   const comparison = message.metadata?.comparison;
   const isConfirmed = confirmedOrderIds.has(message.id);
+  const showComparison = isLast && !isUser && !!comparison;
 
   return (
     <div className={`flex items-start gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
@@ -320,7 +325,7 @@ function MessageBubble({
           )}
         </div>
 
-        {comparison && !isUser && (
+        {showComparison && (
           <ComparisonView
             messageId={message.id}
             comparison={comparison}

@@ -465,7 +465,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
       dispatch({ type: "ADD_MESSAGE", message: userMessage });
 
-      const context = buildContext(messagesRef.current);
+      const context = buildContext(state.messages);
       const typingId = nextId("msg");
       const typingMessage: ChatMessage = {
         id: typingId,
